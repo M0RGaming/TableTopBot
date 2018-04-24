@@ -9,7 +9,7 @@ BOT_PREFIX = ("~","/")
 bot = commands.Bot(command_prefix=BOT_PREFIX, description='A bot that greets the user back.',case_insensitive=True)
 
 xmlDoc = minidom.parse('db.xml')
-corexml = minidom.parse('core.xml')
+corexml = minidom.parse('Core.xml')
 spellxml = corexml.getElementsByTagName("spell")
 debug = False
 
