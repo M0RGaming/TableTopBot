@@ -401,19 +401,22 @@ async def info(ctx, *name):
                                 except:
                                     final += "\n"
 
-                    print(x)
+                    if debug == True:
+                        print(x)
                     name = x.getElementsByTagName("name")[0].childNodes[0].nodeValue
                     #type = x.getElementsByTagName("type")[0].childNodes[0].nodeValue
-                    print(name)
+                    if debug == True:
+                        print(name)
 #                    await bot.say(name+" "+type)
                 
                     final += "```"
                     if debug == True:
                         print(final)
                     try:
-                        await bot.send_message(cID, final)
+                        message = await bot.send_message(cID, "==========Info==========")
+                        await bot.edit_message(message, final)
                     except:
-                        await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)")
+                        await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
                     exit = True
                     break
                 #else:
@@ -423,6 +426,28 @@ async def info(ctx, *name):
     if debug == True:
         print(spell)
 
+@bot.command()
+async def test():
+    x = 0
+    while True:
+        x+=1
+        out = "\n===================="
+        for y in range(0,x):
+            out += "a"
+        await bot.say(out)
+        if x == 2000:
+            await bot.say("done")
+            break
+
+@bot.command()
+async def test2():
+    out = ""
+    for x in range(0,2000):
+        out += "a"
+    message = await bot.say("test")
+    await bot.edit_message(message, out) 
+        
+            
 
 '''
 @bot.command()
