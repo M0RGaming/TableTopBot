@@ -6,7 +6,7 @@ from xml.dom import minidom
 #import lxml
 #from lxml import etree
 BOT_PREFIX = ("~","/")
-bot = commands.Bot(command_prefix=BOT_PREFIX, description='A bot that greets the user back.',case_insensitive=True)
+bot = commands.Bot(command_prefix=BOT_PREFIX, description='Your Typical DnD bot... except better.',case_insensitive=True)
 
 xmlDoc = minidom.parse('db.xml')
 corexml = minidom.parse('Core.xml')
@@ -15,7 +15,9 @@ debug = False
 
 
 messagei = None
-rinit = 0
+rinit = 0 #if were rolling init at this point
+initl = [] #list of all init stuff
+idnumber = 0 #id nubmer
 #db = etree.parse("db.xml")
 
 
@@ -53,7 +55,15 @@ def internal_roll(*argst):
 
 @bot.event
 async def on_message(message):
-    message.content = message.content.lower()
+    x = 0
+    for x in range(0, len(message.content)):
+        if message.content[x-1:x] == " ":
+            break
+
+    if not x==len(message.content):
+        x = x-1
+        
+    message.content = message.content[:x].lower() + message.content[x:]
     await bot.process_commands(message)
 
 @bot.event
@@ -70,21 +80,14 @@ async def on_ready():
 async def wait_until_login():
     await bot.change_presence(game=discord.Game(name='Type /help for help'))
         
+
 @bot.command(name="init",pass_context=True,aliases=['i'])
 async def init(ctx, namel="xml", *argst):
     try:
         if debug == True:
             print(argst)
-        '''
-        try:
-            mod = int(argst[-1])
-            del argst[-1]
-        except:
-            mod = 0
-            '''
         if debug == True:
             print(argst)
-        #print(mod)
         argsl = list(argst)
         argsl.insert(0,namel)
         if debug == True:
@@ -94,28 +97,48 @@ async def init(ctx, namel="xml", *argst):
             del argsl[-1]
         except:
             mod = 0
-            
         name = ' '.join(argsl)
         if debug == True:
             print(argsl)
             print(mod)
         global rinit
         global messagei
+        global initl
+        global idnumber
         if rinit == 1:
             if name == "xml":
                 playerl = xmlDoc.getElementsByTagName("player")
                 y = 0
                 for x in playerl:
                     if x.getElementsByTagName("discordid")[0].childNodes[0].nodeValue == ctx.message.author.id:
+                        idnumber += 1
                         if debug == True:
                             print("FOUND HIM")
                         mod = int(x.getElementsByTagName("init")[0].childNodes[0].nodeValue)
                         if debug == True:
                             print(mod)
                         name = str(x.getElementsByTagName("name")[0].childNodes[0].nodeValue)
+
                         init = random.randint(1,20)+mod
                         clientid = ctx.message.author.id
-                        messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
+                        
+                        initl.append((name,init,idnumber))
+
+                        #print(initl)
+                        initl.sort(key=lambda tup: tup[1], reverse=True)
+                        #print(initl)
+                        
+                        clientid = ctx.message.author.id
+                        changedmsg = "```==========Init=========="
+
+                        for x in range(0, len(initl)):
+                            a,b,c = initl[x]
+                            changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
+                            #print(changedmsg)
+
+                        changedmsg += "```"
+                        messagei = await bot.edit_message(messagei, changedmsg) 
+     #                   messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
                     else:
                         y += 1
                 if y == len(playerl):
@@ -124,17 +147,68 @@ async def init(ctx, namel="xml", *argst):
     #            init = random.randinit(1,20)
                 #print("xml Here")
             else:
+                idnumber = idnumber+1
                 init = random.randint(1,20)
                 init = init+mod
+                initl.append((name,init,idnumber))
+
+                #print(initl)
+                initl.sort(key=lambda tup: tup[1], reverse=True)
+                #print(initl)
+                
                 clientid = ctx.message.author.id
-                messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
+                changedmsg = "```==========Init=========="
+
+                for x in range(0, len(initl)):
+                    a,b,c = initl[x]
+                    changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
+                    #print(changedmsg)
+
+                changedmsg += "```"
+                messagei = await bot.edit_message(messagei, changedmsg)            
+     #           messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
         else:
             await bot.say("Init Rolling has not started yet")
     except:
         await bot.say("<@"+str(ctx.message.author.id)+"> entered an invalid expression.\nThe correct way to use this command is: ~init [name] [init mod]")
+
     
+@bot.command(name="deleteinit",pass_context=True,aliases=['di'])
+async def deleteinit(ctx, id):
+   # try:
+    global initl
+    global messagei
+    found = 0
+    
+    for (a,b,c) in initl:
+       if str(id) == str(c):
+           #print(item)
+           initl.remove((a,b,c))
+           print(initl)
+           found = 1
+           break
+ #          ind = list.index(item)
+#           del
+    if found == 0:
+        await bot.say("Id not found")
+    else:
+        changedmsg = "```==========Init=========="
+
+        for x in range(0, len(initl)):
+            a,b,c = initl[x]
+            changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
+            #print(changedmsg)
+
+        changedmsg += "```"
+        messagei = await bot.edit_message(messagei, changedmsg) 
+    
+ #  except:
+ #       await bot.say("Invalid use of this command, Correct Way to use is: ~di [id]")
+        
+        
+
 @bot.command(name="startinit",pass_context=True,aliases=['si'])
-async def si(ctx):
+async def startinit(ctx):
     if debug == True:
         print("Stage1")
     global rinit
@@ -142,9 +216,13 @@ async def si(ctx):
         if debug == True:
             print("stage2")
         global messagei
+        global idnumber
+        global initl
         messagei = await bot.send_message(ctx.message.channel, "```==========Init==========```")
         await bot.pin_message(messagei)
         rinit = 1
+        idnumber = 0
+        initl = []
     else:
         await bot.say("Init recording has already begun.")
 
@@ -161,6 +239,9 @@ async def endinit():
 async def showinit():
     global messagei
     await bot.say(messagei.content)
+
+
+
 
 @bot.command(name="roll",pass_context=True,aliases=['r'])
 async def roll(ctx, *argst):
@@ -210,15 +291,7 @@ async def roll(ctx, *argst):
     except:
         await bot.say("<@"+str(ctx.message.author.id)+"> specified an invalid dice expression.")
 
-@bot.command(name="lightningbolt",pass_context=True,aliases=['lb'])
-async def lightningbolt(ctx):
-    hit = internal_roll("d20+5")
-    if debug == True:
-        print(hit)
-    damage = internal_roll("8d6")
-    if debug == True:
-        print(damage)
-    await bot.say("<@"+str(ctx.message.author.id)+"> Attacked with lightning bolt:\n"+str(hit)+" vs AC\n"+str(damage)+" Damage")
+
 
 
 @bot.command(name="cast",pass_context=True,aliases=['c'])
@@ -346,5 +419,5 @@ async def spellinfo(ctx, *spell):
 @bot.command()
 async def chaosbolt():
 '''    
-        
-bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ")
+bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
+#bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
