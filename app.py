@@ -349,75 +349,84 @@ async def cast(ctx, spell, *slott):
         await bot.say("<@"+str(ctx.message.author.id)+"> entered an invalid expression.\nThe correct way to use this command is: ~cast [spell name] [spell slot]")
 
        
-@bot.command(name="spellinfo",pass_context=True,aliases=['sinfo'])
-async def spellinfo(ctx, *spell):
-    argst = spell
-    del spell
+@bot.command(name="info",pass_context=True,aliases=['db','spellinfo','sinfo'])
+async def info(ctx, *name):
+    argst = name
+    del name
     if debug == True:
         print(argst)
     #print(mod)
     argsl = list(argst)
-    spell = ' '.join(argsl)
+    name = ' '.join(argsl)
+
+    exit = False
     
     cID = ctx.message.author
-    y = 0
-    final = "```==========Spell Info========="
+    a = 0
+    final = "```==========Info========="
     first = 1
-    for x in spellxml:
-        if x.getElementsByTagName("name")[0].childNodes[0].nodeValue.lower() == spell.lower():
-            #print(x.childNodes)
-            for z in x.childNodes:
-                #print(z.nodeType)
-                
-                if z.nodeType == 1:
-                    if not z.nodeName == "#text":
-                        #print(z)
-                        #print(z.nodeName)
-                        try:
-                            if not z.nodeName == "text":
-                                final += "\n"+str(z.nodeName)+": "+str(z.childNodes[0].nodeValue)
-                                #print(z.childNodes[0].nodeValue)
-      #                          await bot.send_message(cID, z.nodeName+": "+z.childNodes[0].nodeValue)
-                            else:
-                                if first == 1:
+    for y in corexml.childNodes:
+        for x in y.childNodes:
+            if x.nodeType == 1:
+                if x.getElementsByTagName("name")[0].childNodes[0].nodeValue.lower() == name.lower():
+                    for z in x.childNodes:
+                        #print(z.nodeType)
+                        
+                        if z.nodeType == 1:
+                            if not z.nodeName == "#text":
+                                #print(z)
+                                #print(z.nodeName)
+                                try:
+                                    if not z.nodeName == "text":
+                                        final += "\n"+str(z.nodeName.capitalize())+": "+str(z.childNodes[0].nodeValue)
+                                        for b in z.childNodes:
+                                            if b.nodeType == 1:
+                                                try:
+                                                    if not b.nodeName == "text":
+                                                        final += "\n        "+str(b.nodeName.capitalize())+": "+str(b.childNodes[0].nodeValue)
+                                                    else:
+                                                        if first == 1:
+                                                            final += "\n"
+                                                            first = 0
+                                                        final += "\n"+str(b.childNodes[0].nodeValue)
+                                                except:
+                                                    final += "\n"
+                                        #print(z.childNodes[0].nodeValue)
+              #                          await bot.send_message(cID, z.nodeName+": "+z.childNodes[0].nodeValue)
+                                    else:
+                                        if first == 1:
+                                            final += "\n"
+                                            first = 0
+                                        final += "\n"+str(z.childNodes[0].nodeValue)
+                                except:
                                     final += "\n"
-                                    first = 0
-                                final += "\n"+str(z.childNodes[0].nodeValue)
-                        except:
-                            final += "\n"
-                            #print(" ")
- #                           await bot.send_message(cID, "text: ")
-            #for z in x.getElements:
-#                await bot.send_message(cID, z.nodeName+": "+str(z.childNodes[0].nodeValue))
-            '''
-            await bot.send_message(cID, "Level: " +
-            await bot.send_message(cID, "School: " +
-            await bot.send_message(cID, "Ritual: "
-            
-            if not damage == "N/A":
-                await bot.say("<@"+str(ctx.message.author.id)+"> Attacked with "+spell+":\n"+str(hit)+" vs AC\n"+str(damage)+" Damage")
-            else:
-                await bot.say("<@"+str(ctx.message.author.id)+"> Used "+spell+":\n"+str(hit)+" vs DC")
-            break
-        '''
-            final += "```"
-            if debug == True:
-                print(final)
-            await bot.send_message(cID, final)
-            break
-        else:
-            y += 1
-    if y == len(spellxml):
-        await bot.say("Spell not found in database")
+
+                    print(x)
+                    name = x.getElementsByTagName("name")[0].childNodes[0].nodeValue
+                    #type = x.getElementsByTagName("type")[0].childNodes[0].nodeValue
+                    print(name)
+#                    await bot.say(name+" "+type)
+                
+                    final += "```"
+                    if debug == True:
+                        print(final)
+                    try:
+                        await bot.send_message(cID, final)
+                    except:
+                        await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)")
+                    exit = True
+                    break
+                #else:
+        a += 1
+    if a == len(corexml.childNodes) and exit == False:
+        await bot.say("Thing not found in database")
     if debug == True:
         print(spell)
-    #print(slot)
-   
-    #await bot.send_message(ctx.message.author, "Spell info")
+
 
 '''
 @bot.command()
 async def chaosbolt():
 '''    
-bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
-#bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
+#bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
+bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
