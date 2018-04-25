@@ -413,8 +413,21 @@ async def info(ctx, *name):
                     if debug == True:
                         print(final)
                     try:
-                        message = await bot.send_message(cID, "==========Info==========")
-                        await bot.edit_message(message, final)
+                        if "\n" in final:
+                            if debug == True:
+                                print("yes")
+                                print(final.rfind("\n"))
+                            
+
+                        while len(final) > 2000-3:
+                            ind = final[:2000-3].rfind("\n")
+                            if debug == True:
+                                print(ind)
+                            await bot.send_message(cID, final[:ind]+"```")
+                            final = "```"+final[ind:]
+                            
+                        else:
+                            await bot.send_message(cID, final)
                     except:
                         await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
                     exit = True
@@ -425,33 +438,5 @@ async def info(ctx, *name):
         await bot.say("Thing not found in database")
     if debug == True:
         print(spell)
-
-@bot.command()
-async def test():
-    x = 0
-    while True:
-        x+=1
-        out = "\n===================="
-        for y in range(0,x):
-            out += "a"
-        await bot.say(out)
-        if x == 2000:
-            await bot.say("done")
-            break
-
-@bot.command()
-async def test2():
-    out = ""
-    for x in range(0,2000):
-        out += "a"
-    message = await bot.say("test")
-    await bot.edit_message(message, out) 
-        
-            
-
-'''
-@bot.command()
-async def chaosbolt():
-'''    
 bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
 #bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
