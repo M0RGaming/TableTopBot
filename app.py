@@ -1,8 +1,13 @@
 import discord
+import asyncio
 from discord.ext import commands
 import random
 import os
 from xml.dom import minidom
+import pickle
+#from git import Repo
+#from github import Github
+
 #import lxml
 #from lxml import etree
 BOT_PREFIX = ("~","/")
@@ -22,6 +27,12 @@ idnumber = 0 #id nubmer
 
 
 
+### IMPORTANT ###
+#stored_info = [(serverID,[vars,(messagei,messagei),(rinit,rinit),(initl,initl),(idnumber,idnumber)],[init, (playerID, data), (playerID, data)]),(serverID,info)]
+stored_info = []
+
+
+            
 def internal_roll(*argst):
     total = 0
     argsl = list(argst)
@@ -53,13 +64,28 @@ def internal_roll(*argst):
 
 
 
+async def my_background_task():
+    await bot.wait_until_ready()
+    counter = 0
+ #   channel = discord.Object(id='161614687321063434')
+    while not bot.is_closed:
+        await asyncio.sleep(21600) # task runs every 6 hours
+        global stored_info
+        pickle.dump( stored_info, open( "save.p", "wb" ) )
+        counter += 1
+        #await bot.send_message(channel, counter)
+        print("Saving")
+        
+        
+
+
+
 @bot.event
 async def on_message(message):
     x = 0
     for x in range(0, len(message.content)):
         if message.content[x-1:x] == " ":
             break
-
     if not x==len(message.content):
         x = x-1
         
@@ -68,10 +94,16 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
+    global stored_info
     print('Logged in as')
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+    if debug == True:
+        print(stored_info)
+    stored_info = pickle.load( open( "save.p", "rb" ) )
+    if debug == True:
+        print(stored_info)
  #   await bot.change_presence('Type /help for help')
  #   await bot.change_presence(game=discord.Game(name='Type /help for help'))    
  #   await bot.change_status(game=discord.Game(name = "Type /help for help"))
@@ -82,125 +114,110 @@ async def wait_until_login():
         
 
 @bot.command(name="init",pass_context=True,aliases=['i'])
-async def init(ctx, namel="xml", *argst):
+async def init(ctx, name="xml", *mod):
+    
+    namel = name
+    del name
+    argst = mod
+    del mod
+    argsl = list(argst)
+    argsl.insert(0,namel)
     try:
-        if debug == True:
-            print(argst)
-        if debug == True:
-            print(argst)
-        argsl = list(argst)
-        argsl.insert(0,namel)
-        if debug == True:
-            print(argsl)
-        try:
-            mod = int(argsl[-1])
-            del argsl[-1]
-        except:
-            mod = 0
-        name = ' '.join(argsl)
-        if debug == True:
-            print(argsl)
-            print(mod)
-        global rinit
-        global messagei
-        global initl
-        global idnumber
+        mod = int(argsl[-1])
+        del argsl[-1]
+    except:
+        mod = 0
+    name = ' '.join(argsl)
+    
+    global stored_info
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        
+        rinit = stored_info[index][1][1]
+        messagei = stored_info[index][1][0]
+        initl = stored_info[index][1][2]
+        idnumber = stored_info[index][1][3]
+        initdb = stored_info[index][2]
+    
         if rinit == 1:
             if name == "xml":
-                playerl = xmlDoc.getElementsByTagName("player")
-                y = 0
-                for x in playerl:
-                    if x.getElementsByTagName("discordid")[0].childNodes[0].nodeValue == ctx.message.author.id:
-                        idnumber += 1
-                        if debug == True:
-                            print("FOUND HIM")
-                        mod = int(x.getElementsByTagName("init")[0].childNodes[0].nodeValue)
-                        if debug == True:
-                            print(mod)
-                        name = str(x.getElementsByTagName("name")[0].childNodes[0].nodeValue)
 
-                        init = random.randint(1,20)+mod
-                        clientid = ctx.message.author.id
-                        
-                        initl.append((name,init,idnumber))
-
-                        #print(initl)
-                        initl.sort(key=lambda tup: tup[1], reverse=True)
-                        #print(initl)
-                        
-                        clientid = ctx.message.author.id
-                        changedmsg = "```==========Init=========="
-
-                        for x in range(0, len(initl)):
-                            a,b,c = initl[x]
-                            changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
-                            #print(changedmsg)
-
-                        changedmsg += "```"
-                        messagei = await bot.edit_message(messagei, changedmsg) 
-     #                   messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
-                    else:
-                        y += 1
-                if y == len(playerl):
-                    await bot.say("Not found in database, use the command ~i [mod] [name]")
-     #           mod = et.xpath("/db/player/
-    #            init = random.randinit(1,20)
-                #print("xml Here")
+                y = str([i2 for i2, v2 in enumerate(stored_info[index][2]) if v2[0] == auth])[1:-1]
+                if not y == "":
+                    idnumber += 1
+                    y = int(y)
+                    mod = stored_info[index][2][y][1][1]
+                    name = stored_info[index][2][y][1][0]
+                    
+                    init = random.randint(1,20)+mod                    
+                    initl.append((name,init,idnumber))
+                    initl.sort(key=lambda tup: tup[1], reverse=True)
+                    clientid = ctx.message.author.id
+                    changedmsg = "```==========Init=========="
+                    for x in range(0, len(initl)):
+                        a,b,c = initl[x]
+                        changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
+                    changedmsg += "```"
+                    messagei = await bot.edit_message(messagei, changedmsg)
+                else:
+                    await bot.say("You are not yet registered")                    
             else:
                 idnumber = idnumber+1
                 init = random.randint(1,20)
                 init = init+mod
                 initl.append((name,init,idnumber))
-
-                #print(initl)
                 initl.sort(key=lambda tup: tup[1], reverse=True)
-                #print(initl)
-                
                 clientid = ctx.message.author.id
                 changedmsg = "```==========Init=========="
-
                 for x in range(0, len(initl)):
                     a,b,c = initl[x]
                     changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
-                    #print(changedmsg)
-
                 changedmsg += "```"
                 messagei = await bot.edit_message(messagei, changedmsg)            
-     #           messagei = await bot.edit_message(messagei, messagei.content[:-3]+"\n<"+name+"> Rolled an init of "+str(init)+"```")
         else:
             await bot.say("Init Rolling has not started yet")
-    except:
-        await bot.say("<@"+str(ctx.message.author.id)+"> entered an invalid expression.\nThe correct way to use this command is: ~init [name] [init mod]")
+
+        stored_info[index][1][1] = rinit
+        stored_info[index][1][0] = messagei
+        stored_info[index][1][2] = initl
+        stored_info[index][1][3] = idnumber
 
     
 @bot.command(name="deleteinit",pass_context=True,aliases=['di'])
 async def deleteinit(ctx, id):
-   # try:
-    global initl
-    global messagei
-    found = 0
+    global stored_info
+    #print(stored_info)
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        messagei = stored_info[index][1][0]
+        initl = stored_info[index][1][2]
+        #print(initl)
+        
+        y = str([i2 for i2, v2 in enumerate(stored_info[index][1][2]) if str(v2[2]) == str(id)])[1:-1]
+        if not y == "":
+            y = int(y)
+            initl.remove(initl[y])
+            #print(initl)
+            changedmsg = "```==========Init=========="
+            for x in range(0, len(initl)):
+                a,b,c = initl[x]
+                changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
+            changedmsg += "```"
+            messagei = await bot.edit_message(messagei, changedmsg)
+            
+            stored_info[index][1][2] = initl
+            stored_info[index][1][0] = messagei
+            
+        else:
+            await bot.say("Id not found")
+
     
-    for (a,b,c) in initl:
-       if str(id) == str(c):
-           #print(item)
-           initl.remove((a,b,c))
-           print(initl)
-           found = 1
-           break
- #          ind = list.index(item)
-#           del
-    if found == 0:
-        await bot.say("Id not found")
-    else:
-        changedmsg = "```==========Init=========="
-
-        for x in range(0, len(initl)):
-            a,b,c = initl[x]
-            changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
-            #print(changedmsg)
-
-        changedmsg += "```"
-        messagei = await bot.edit_message(messagei, changedmsg) 
     
  #  except:
  #       await bot.say("Invalid use of this command, Correct Way to use is: ~di [id]")
@@ -209,36 +226,60 @@ async def deleteinit(ctx, id):
 
 @bot.command(name="startinit",pass_context=True,aliases=['si'])
 async def startinit(ctx):
-    if debug == True:
-        print("Stage1")
-    global rinit
-    if rinit == 0:
-        if debug == True:
-            print("stage2")
-        global messagei
-        global idnumber
-        global initl
-        messagei = await bot.send_message(ctx.message.channel, "```==========Init==========```")
-        await bot.pin_message(messagei)
-        rinit = 1
-        idnumber = 0
-        initl = []
-    else:
-        await bot.say("Init recording has already begun.")
+    global stored_info
+    #print(stored_info)
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        rinit = stored_info[index][1][1]
+        if rinit == 0:
+            global messagei
+            global idnumber
+            global initl
+            messagei = await bot.send_message(ctx.message.channel, "```==========Init==========```")
+            await bot.pin_message(messagei)
+            rinit = 1
+            idnumber = 0
+            initl = []
 
-@bot.command(name="endinit",aliases=['ei'])
-async def endinit():
-    global rinit
-    if rinit == 1:
-        rinit = 0
-        await bot.say("Init recording has stoped")
-    else:
-        await bot.say("Init recording is not started.")
+            stored_info[index][1][1] = rinit
+            stored_info[index][1][0] = messagei
+            stored_info[index][1][2] = initl
+            stored_info[index][1][3] = idnumber
+            
+        else:
+            await bot.say("Init recording has already begun.")
 
-@bot.command(name="showinit",aliases=['showi'])
-async def showinit():
-    global messagei
-    await bot.say(messagei.content)
+@bot.command(name="endinit",aliases=['ei'],pass_context=True)
+async def endinit(ctx):
+    global stored_info
+    sID = ctx.message.server
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        rinit = stored_info[index][1][1]
+        
+        if rinit == 1:
+            rinit = 0
+            await bot.say("Init recording has stoped")
+        else:
+            await bot.say("Init recording is not started.")
+
+        stored_info[index][1][1] = rinit
+
+            
+
+@bot.command(name="showinit",aliases=['showi'],pass_context=True)
+async def showinit(ctx):
+    global stored_info
+    sID = ctx.message.server
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        messagei = stored_info[index][1][0]
+        await bot.say(messagei.content)
 
 
 
@@ -438,5 +479,107 @@ async def info(ctx, *name):
         await bot.say("Thing not found in database")
     if debug == True:
         print(spell)
+
+
+
+@bot.command(name="initserver",pass_context=True,aliases=['is'])
+async def initserver(ctx):
+    global messagei
+    if debug == True:
+        print("starting")
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    global stored_info
+    rinit = 0
+    initl = []
+    idnumber = 0
+    info = (sID,[messagei,rinit,initl,idnumber],[("ID",["NAME","MOD"])])
+    stored_info.append(info)
+    if debug == True:
+        print(stored_info)
+
+
+@bot.command(name="addinit",pass_context=True,aliases=['ai'])
+async def addinit(ctx, name, *mod):
+    
+    namel = name
+    del name
+    argst = mod
+    del mod
+    argsl = list(argst)
+    argsl.insert(0,namel)
+    try:
+        mod = int(argsl[-1])
+        del argsl[-1]
+    except:
+        mod = 0
+    name = ' '.join(argsl)
+
+    name = str(name)
+    mod = int(mod)
+    
+    global stored_info
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        initdb = stored_info[index][2]
+        
+        y = str([i2 for i2, v2 in enumerate(stored_info[index][2]) if v2[0] == auth])[1:-1]
+        if y == "":
+            info = (auth, [name, mod])
+            stored_info[index][2].append(info)
+            print(stored_info[index][2])
+        else:
+            await bot.say("You already have a registered charecter")
+    else:
+        await bot.say("Server is not registered")
+
+
+@bot.command(pass_context=True)
+async def store(ctx):
+    if str(ctx.message.author.id) == "161614687321063434":
+        print("Saving")
+        global stored_info
+        if debug == True:
+            print(repr(stored_info))
+        
+        pickle.dump( stored_info, open( "save.p", "wb" ) )
+    else:
+        await bot.say("You do not have the nessicary permissions")
+
+@bot.command(pass_context=True)
+async def deleteinfo(ctx):
+    if str(ctx.message.author.id) == "161614687321063434":
+        global stored_info
+        print("Deleting")
+        stored_info = []
+        pickle.dump( stored_info, open( "save.p", "wb" ) )
+    else:
+        await bot.say("You do not have the nessicary permissions")
+'''
+@bot.command(pass_context=True)
+async def i2(ctx):
+    global stored_info
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        print(index)
+        y = str([i2 for i2, v2 in enumerate(stored_info[index][2]) if v2[0] == auth])[1:-1]
+        if not y == "":
+            y = int(y)
+            print(stored_info[index][2][y][1][1])
+    else:
+        print("index does not exist")
+
+'''
+
+
+
+
+bot.loop.create_task(my_background_task())
 bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
 #bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
