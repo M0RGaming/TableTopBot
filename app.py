@@ -5,13 +5,21 @@ import random
 import os
 from xml.dom import minidom
 import pickle
+import sys
+from datetime import datetime
 #from git import Repo
 #from github import Github
+
 
 #import lxml
 #from lxml import etree
 BOT_PREFIX = ("~","/")
-bot = commands.Bot(command_prefix=BOT_PREFIX, description='Your Typical DnD bot... except better.',case_insensitive=True)
+desc = "Your Typical DnD bot... except better."
+bot = commands.Bot(command_prefix=BOT_PREFIX, description=desc,)
+
+
+bot.remove_command('help')
+
 
 xmlDoc = minidom.parse('db.xml')
 corexml = minidom.parse('Core.xml')
@@ -79,7 +87,6 @@ async def my_background_task():
         
 
 
-
 @bot.event
 async def on_message(message):
     x = 0
@@ -104,6 +111,13 @@ async def on_ready():
     stored_info = pickle.load( open( "save.p", "rb" ) )
     if debug == True:
         print(stored_info)
+
+    old_f = sys.stdout
+    class F:
+        def write(self, x):
+            old_f.write(x.replace("\n", " [%s]\n" % str(datetime.now())))
+ #            old_f.write("["+str(datetime.now())+"] --- "+x)
+    sys.stdout = F()
  #   await bot.change_presence('Type /help for help')
  #   await bot.change_presence(game=discord.Game(name='Type /help for help'))    
  #   await bot.change_status(game=discord.Game(name = "Type /help for help"))
@@ -184,6 +198,8 @@ async def init(ctx, name="xml", *mod):
         stored_info[index][1][0] = messagei
         stored_info[index][1][2] = initl
         stored_info[index][1][3] = idnumber
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
     
 @bot.command(name="deleteinit",pass_context=True,aliases=['di'])
@@ -216,6 +232,8 @@ async def deleteinit(ctx, id):
             
         else:
             await bot.say("Id not found")
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
     
     
@@ -234,12 +252,17 @@ async def startinit(ctx):
     if not index == "":
         index = int(index)
         rinit = stored_info[index][1][1]
+        pinmessage = stored_info[index][1][4]
         if rinit == 0:
             global messagei
             global idnumber
             global initl
             messagei = await bot.send_message(ctx.message.channel, "```==========Init==========```")
-            await bot.pin_message(messagei)
+            try:
+                if pinmessage == 1:
+                    await bot.pin_message(messagei)
+            except:
+                await bot.send_message(ctx.message.author, "Cannot pin message, probably due to not having the manage message privlage in roles.")
             rinit = 1
             idnumber = 0
             initl = []
@@ -251,6 +274,8 @@ async def startinit(ctx):
             
         else:
             await bot.say("Init recording has already begun.")
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
 @bot.command(name="endinit",aliases=['ei'],pass_context=True)
 async def endinit(ctx):
@@ -268,6 +293,8 @@ async def endinit(ctx):
             await bot.say("Init recording is not started.")
 
         stored_info[index][1][1] = rinit
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
             
 
@@ -279,8 +306,13 @@ async def showinit(ctx):
     if not index == "":
         index = int(index)
         messagei = stored_info[index][1][0]
-        await bot.say(messagei.content)
+        if not messagei == None:
+            await bot.say(messagei.content)
+        else:
+            await bot.say("Init rolling has not occured before, do /si or /startinit to start rolling")
 
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
 
 
@@ -470,7 +502,8 @@ async def info(ctx, *name):
                         else:
                             await bot.send_message(cID, final)
                     except:
-                        await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
+                        #await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
+                        await bot.say("This message typicaly occurs when one has private messaging disabled.\nDue to the size of the info, we are required to pm you with it.\nTo use this command, allow bots to pm you.")
                     exit = True
                     break
                 #else:
@@ -484,22 +517,32 @@ async def info(ctx, *name):
 
 @bot.command(name="initserver",pass_context=True,aliases=['is'])
 async def initserver(ctx):
-    global messagei
-    if debug == True:
-        print("starting")
     sID = ctx.message.server
-    auth = ctx.message.author.id
     global stored_info
-    rinit = 0
-    initl = []
-    idnumber = 0
-    info = (sID,[messagei,rinit,initl,idnumber],[("ID",["NAME","MOD"])])
-    stored_info.append(info)
-    if debug == True:
-        print(stored_info)
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if index == "":
+        global messagei
+        if debug == True:
+            print("starting")
+        auth = ctx.message.author.id
+        rinit = 0
+        initl = []
+        idnumber = 0
+        pinmessage = 0
+        info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])])
+        stored_info.append(info)
+        try:
+            await bot.delete_message(ctx.message)
+            await bot.say("Server initialized")
+        except:
+            await bot.say("Server initialized")
+        if debug == True:
+            print(stored_info)
+        print("New Server Initialized - "+str(ctx.message.server.name))
+    else:
+        await bot.say("Server already initialized")
 
-
-@bot.command(name="addinit",pass_context=True,aliases=['ai'])
+@bot.command(name="addinit",pass_context=True,aliases=['ai'],description="Adds a player to the Inititive database",brief="Adds a player to the Inititive database")
 async def addinit(ctx, name, *mod):
     
     namel = name
@@ -530,14 +573,54 @@ async def addinit(ctx, name, *mod):
         if y == "":
             info = (auth, [name, mod])
             stored_info[index][2].append(info)
-            print(stored_info[index][2])
+            #print(stored_info[index][2])
+            try:
+                await bot.delete_message(ctx.message)
+                await bot.say("<@"+str(auth)+"> has registered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
+            except:
+                await bot.say("You have registered charecter: "+name+" with a mod of "+str(mod))
+
         else:
             await bot.say("You already have a registered charecter")
     else:
-        await bot.say("Server is not registered")
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
 
-@bot.command(pass_context=True)
+
+@bot.command(name="removeinit",pass_context=True,aliases=['ri'])
+async def removeinit(ctx):
+    
+    global stored_info
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        initdb = stored_info[index][2]
+        
+        y = str([i2 for i2, v2 in enumerate(stored_info[index][2]) if v2[0] == auth])[1:-1]
+        if not y == "":
+            y = int(y)
+            name = stored_info[index][2][y][1][0]
+            mod = stored_info[index][2][y][1][1]
+            del stored_info[index][2][y]
+            #print(stored_info[index][2])
+            try:
+                await bot.delete_message(ctx.message)
+    #            await bot.edit_message(ctx.message,"You have unregistered charecter: "+name+" with a mod of "+str(mod)) 
+                await bot.say("<@"+str(auth)+"> has unregistered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
+            except:
+                await bot.say("You have unregistered charecter: "+name+" with a mod of "+str(mod))
+
+        else:
+            await bot.say("You have no registered charecters for this server")
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
+
+
+
+
+@bot.command(pass_context=True, hidden=True)
 async def store(ctx):
     if str(ctx.message.author.id) == "161614687321063434":
         print("Saving")
@@ -547,9 +630,9 @@ async def store(ctx):
         
         pickle.dump( stored_info, open( "save.p", "wb" ) )
     else:
-        await bot.say("You do not have the nessicary permissions")
+        await bot.say("You do not have the necessary permissions")
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def deleteinfo(ctx):
     if str(ctx.message.author.id) == "161614687321063434":
         global stored_info
@@ -557,7 +640,89 @@ async def deleteinfo(ctx):
         stored_info = []
         pickle.dump( stored_info, open( "save.p", "wb" ) )
     else:
-        await bot.say("You do not have the nessicary permissions")
+        await bot.say("You do not have the necessary permissions")
+
+@bot.command(pass_context=True, hidden=True)
+async def exportfile(ctx):
+    if str(ctx.message.author.id) == "161614687321063434":
+        global stored_info
+
+        print("Saving")
+        pickle.dump(stored_info, open("save.p", "wb"))
+        print("Exporting")
+        #print(repr(stored_info))
+        await bot.send_file(ctx.message.author, "save.p")
+    else:
+        await bot.say("You do not have the necessary permissions")
+
+@bot.command(pass_context=True, hidden=True)
+async def importfile(ctx):
+    if str(ctx.message.author.id) == "161614687321063434":
+        global stored_info
+        print(repr(stored_info))
+        print("Importing")
+        stored_info = pickle.load( open( "save.p", "rb" ) )
+        #print(repr(stored_info))
+    else:
+        await bot.say("You do not have the necessary permissions")
+
+@bot.command(name="help",aliases=['h'])
+async def help(command="None"):
+    
+    commandlist = []
+    commandlist.append(("roll","r","Anyone can use to roll standard dice expressions"))
+    commandlist.append(("cast","c","Anyone can use to cast a spell (rolls dice for Hit and Damage)"))
+    commandlist.append(("info","db","Anyone can use to get info for any core \"Thing\" inside DnD"))
+    
+    helptxt = "```css"+"\n"+"[Your Typical DnD bot... except better.]"+"```"
+    helptxt += "```md"+"\n[Command Group][Basic]\n"
+    helptxt += "\n</roll (r)> <Anyone can use to roll standard dice expressions>"
+    helptxt += "\n</cast (c)> <Anyone can use to cast a spell (rolls dice for Hit and Damage)>"
+    helptxt += "\n</info (db)> <Anyone can use to get info for any core \"Thing\" inside DnD>"
+    helptxt += "```"
+    helptxt += "```md"+"\n[Command Group][Init]\n"
+    helptxt += "\n</initserver (is)> <GM uses to enable init commands on the server>"
+    helptxt += "\n</startinit (si)> <GM uses to start init rolling>"
+    helptxt += "\n</endinit (ei)> <GM uses to end init rolling>"
+    helptxt += "\n</deleteinit (di)> <GM uses to remove someone (by id) from the current init list>"
+    helptxt += "\n</showinit (showi)> <Anyone can use this to show the current init list>"
+    helptxt += "\n</init (i)> <Anyone can use this to add themselves to the current init list>"
+    helptxt += "\n</addinit (ai)> <Players can use this to add their init mod to the bot database [syntax is /ai (name) (mod)]>"
+    helptxt += "\n</removeinit (ri)> <Players can use this to remove their character from the bot database>"
+    helptxt += "\n</togglepin (tp)> <GM uses to toggle pinning init list (Default = Off)>"
+    helptxt += "```"
+    await bot.say(helptxt)
+
+@bot.command(name="togglepin",aliases=['tp'],pass_context=True)
+async def togglepin(ctx):
+    global stored_info
+    sID = ctx.message.server
+    auth = ctx.message.author.id
+    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+    if not index == "":
+        index = int(index)
+        pinmessage = stored_info[index][1][4]
+        if pinmessage == 0:
+            pinmessage = 1
+            try:
+                await bot.delete_message(ctx.message)
+                await bot.say("Pins Turned On")
+            except:
+                await bot.say("Pins Turned On")
+        else:
+            pinmessage = 0
+            try:
+                await bot.delete_message(ctx.message)
+                await bot.say("Pins Turned Off")
+            except:
+                await bot.say("Pins Turned Off")
+
+        stored_info[index][1][4] = pinmessage
+    else:
+        await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
+
+        
+
 '''
 @bot.command(pass_context=True)
 async def i2(ctx):
