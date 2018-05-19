@@ -7,6 +7,8 @@ from xml.dom import minidom
 import pickle
 import sys
 from datetime import datetime
+import string
+import unicodedata
 #from git import Repo
 #from github import Github
 
@@ -45,6 +47,7 @@ def internal_roll(*argst):
     total = 0
     argsl = list(argst)
     rolls = ''.join(argsl)
+    rolls.replace("-", "+-")
     rollsl = rolls.split('+')
     if debug == True:
         print(rollsl)
@@ -95,6 +98,7 @@ async def on_message(message):
             break
     if not x==len(message.content):
         x = x-1
+
         
     message.content = message.content[:x].lower() + message.content[x:]
     await bot.process_commands(message)
@@ -323,41 +327,57 @@ async def roll(ctx, *argst):
         total = 0
         argsl = list(argst)
         rolls = ''.join(argsl)
+        rolls = str.replace(rolls, "-", "+-")
         rollsl = rolls.split('+')
+        multiplier = 1
         if debug == True:
             print(rollsl)
         for x in rollsl:
-            if "d" in x:
-                subtotal = 0
-                #breakdown += "("
-                rollslx = x.split("d")
-                if rollslx[0] == "":
-                    rollslx[0] = "1"
-                if debug == True:
-                    print(rollslx)
-                for x in range(int(rollslx[0])):
-                    roll = random.randint(1,int(rollslx[1]))
-                    subtotal += roll
-                    breakdown += str(roll)+" + "
-                breakdown = breakdown[:-3]
-                if debug == True:
-                    print("code")
-                #breakdown += ")+"
-                if "+" in breakdown:
-                    breakdown += " = "+str(subtotal)+",   "
+            if not x == "":
+                if "d" in x:
+                    subtotal = 0
+                    #breakdown += "("
+                    rollslx = x.split("d")
+                    if rollslx[0] == "":
+                        rollslx[0] = "1"
+                    if rollslx[0] == "-":
+                        rollslx[0] = "1"
+                        multiplier = -1
+                    if debug == True:
+                        print(rollslx)
+                    for y in range(int(rollslx[0])):
+                        roll = random.randint(1,int(rollslx[1]))
+                        roll *= multiplier
+                        subtotal += roll
+                        breakdown += str(roll)+" + "
+                    breakdown = breakdown[:-3]
+                    if debug == True:
+                        print("code")
+                    #breakdown += ")+"
+                    if "+" in breakdown:
+                        breakdown += " = "+str(subtotal)+",   "
+                    else:
+                        breakdown += ",   "
+                    total += subtotal
                 else:
-                    breakdown += ",   "
-                total += subtotal
-            else:
-                total += int(x)
-                breakdown += str(x)+",   "
+                    total += int(x)
+                    breakdown += str(x)+",   "
+            
         if debug == True:        
             print(total)
         breakdown = breakdown[:-4]
         if "," in breakdown or "+" in breakdown:
-            await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+")")
+            try:
+                await bot.delete_message(ctx.message)
+                await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+") [Command Inputed:"+ctx.message.content+"]")
+            except:
+                await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+")")
         else:
-            await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**.")
+            try:
+                await bot.delete_message(ctx.message)
+                await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. [Command Inputed:"+ctx.message.content+"]")
+            except:
+                await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**.")
         if debug == True:
             print(breakdown)
         #await bot.say(breakdown)
@@ -722,7 +742,47 @@ async def togglepin(ctx):
         await bot.say("Server not yet initialized, run /initserver or /is to initialize the server")
 
         
+@bot.command(name="d20",pass_context=True)
+async def d20(ctx, mod=0):
+    roll = random.randint(1,20)
+    try:
+        roll = mod+roll
+        await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a "+str(roll))
+    except:
+        await bot.say("Invalid d20 expression, do no have + inside the expression")
+    
 
+
+@bot.command(name="test",pass_context=True)
+async def test(ctx):
+    messagec = await bot.say("Enter Char Name")
+    messagei = await bot.wait_for_message(author=ctx.message.author)
+    messagec = await bot.edit_message(messagec, messagei.content)
+    await bot.delete_message(messagei)
+    num = ["0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"]
+    messagec = await bot.edit_message(messagec, messagec.content+"\nPlease Enter Your init\nInit: ")
+    for x in num:
+        await bot.add_reaction(messagec,x)
+
+    await bot.add_reaction(messagec,u"\U0001F51A")
+    await bot.add_reaction(messagec,u"\u23EA")
+    
+    end = False
+    while end == False:
+        res = await bot.wait_for_reaction(message=messagec,user=ctx.message.author)
+        emoji = res.reaction.emoji
+        if emoji == u"\U0001F51A":
+            await bot.say("Complete")
+            end = True
+        elif emoji == u"\u23EA":
+            messagec = await bot.edit_message(messagec, messagec.content[:-1])
+        else:
+            for x in range(0, len(num)):
+                if emoji == num[x]:
+                    messagec = await bot.edit_message(messagec, messagec.content+str(x))
+     #   await bot.edit_message(messagec, messagec.content+" "+res.reaction.emoji)
+     
+    
 '''
 @bot.command(pass_context=True)
 async def i2(ctx):
@@ -746,5 +806,5 @@ async def i2(ctx):
 
 
 bot.loop.create_task(my_background_task())
-bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
-#bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
+#bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
+bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
