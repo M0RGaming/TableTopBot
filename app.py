@@ -10,4 +10,8 @@ import time
 
 print(os.environ["Token"])
 
+os.environ["Token"] = "PLZ WORKS"
+
+print(os.environ["Token"])
+
 time.sleep(3600)
