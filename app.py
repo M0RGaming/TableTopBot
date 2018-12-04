@@ -26,7 +26,7 @@ bot.remove_command('help')
 xmlDoc = minidom.parse('db.xml')
 corexml = minidom.parse('Core.xml')
 spellxml = corexml.getElementsByTagName("spell")
-debug = False
+debug = True
 
 
 messagei = None
@@ -39,39 +39,25 @@ idnumber = 0 #id nubmer
 
 ### IMPORTANT ###
 #stored_info = [(serverID,[vars,(messagei,messagei),(rinit,rinit),(initl,initl),(idnumber,idnumber)],[init, (playerID, data), (playerID, data)]),(serverID,info)]
+'''
+Top level -> lowest
+
+stored info
+(serverID,vars,init)
+
+vars
+messages,rinit,initl,idnumber
+
+init
+(playerID,data)
+
+storedinfo.append((sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])])) # LATEST
+'''
+
+#stored_info = [(serverID,[vars,(messagei,messagei),(rinit,rinit),(initl,initl),(idnumber,idnumber)],[init, (playerID, data), (playerID, data)])]
 stored_info = []
 
 
-            
-def internal_roll(*argst):
-    total = 0
-    argsl = list(argst)
-    rolls = ''.join(argsl)
-    rolls.replace("-", "+-")
-    rollsl = rolls.split('+')
-    if debug == True:
-        print(rollsl)
-    for x in rollsl:
-        if "d" in x:
-            subtotal = 0
-            rollslx = x.split("d")
-            if rollslx[0] == "":
-                rollslx[0] = "1"
-            if debug == True:
-                print(rollslx)
-            for x in range(int(rollslx[0])):
-                roll = random.randint(1,int(rollslx[1]))
-                subtotal += roll
-            if debug == True:
-                print(subtotal)
-            total += subtotal
-        else:
-            total += int(x)
-            if debug == True:
-                print(int(x))
-    if debug == True:
-        print(total)
-    return total
 
 
 
@@ -801,10 +787,97 @@ async def i2(ctx):
         print("index does not exist")
 
 '''
+@bot.command(name="test3",pass_context=True,aliases=['t3'])
+async def test3(ctx, name, *output):
+    argst = output
+    del output
+    if debug == True:
+        print(argst)
+    #print(mod)
+    argsl = list(argst)
+    output = ' '.join(argsl)
 
+    exit = False
+    
+    cID = ctx.message.author
+
+    '''
+    if "```" in output:
+        index = output.find("```")
+        await bot.say(index)
+        index += 3
+'''            
+    output = output.replace("\\n", "\n")
+    output = output.replace("}", "]}")
+    output = output.replace("{", "{[")
+    output = output.replace("}", "{")
+    outputl = output.split('{')
+    print(outputl)
+
+    commands = "```md"+"\n<Commands Used (from first to last)>: "
+    commandlen = len(commands)
+
+    ind = 0
+    for x in outputl:
+        try:
+            if "[" in x and "]" in x:
+                x = x.replace("[", "")
+                x = x.replace("]", "")
+                nx = str(internal_roll(x))
+                commands += x+", "
+                outputl[ind] = "["+nx+"]"
+            ind += 1
+        except:
+            print("Failed to do roll")
+            
+
+    output = ''.join(outputl)
+
+    await bot.say(output)
+
+    print(commands)
+    if not commandlen == len(commands):
+        print("commandlen: "+str(commandlen))
+        print("commandlength: "+str(len(commands)))
+        commands = commands[:-2]
+        commands += ">```"
+        commands = commands.replace("[", "<")
+        commands = commands.replace("]", ">")
+        await bot.say(commands)
+
+            
+def internal_roll(*argst):
+    total = 0
+    argsl = list(argst)
+    rolls = ''.join(argsl)
+    rolls.replace("-", "+-")
+    rollsl = rolls.split('+')
+    if debug == True:
+        print(rollsl)
+    for x in rollsl:
+        if "d" in x:
+            subtotal = 0
+            rollslx = x.split("d")
+            if rollslx[0] == "":
+                rollslx[0] = "1"
+            if debug == True:
+                print(rollslx)
+            for x in range(int(rollslx[0])):
+                roll = random.randint(1,int(rollslx[1]))
+                subtotal += roll
+            if debug == True:
+                print(subtotal)
+            total += subtotal
+        else:
+            total += int(x)
+            if debug == True:
+                print(int(x))
+    if debug == True:
+        print(total)
+    return total
 
 
 
 bot.loop.create_task(my_background_task())
-bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
-#bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
+#bot.run("NDM4MTM5ODUwNTQ2MjE2OTcx.DcARFA.2SYJJFyqMhTTsU6D9aXPqXDmRbQ") #actual       
+bot.run("NDM4NDkxMDQ1MTEwNDgwODk2.DcFYJA.q3ivDLI__109cqRWL7sds6ZPwnI") # Test
