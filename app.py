@@ -25,6 +25,8 @@ token = os.environ["Token"]
 debugS = os.environ["Debug"]
 if debugS == "true":
     debug = True
+else:
+    debug = False
 
 
 bot.remove_command('help')
