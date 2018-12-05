@@ -14,6 +14,6 @@ import time
 
 #print(os.environ["Token"])
 
-print(os.listdir())
+print(os.listdir("/"))
 
 time.sleep(3600)
