@@ -76,7 +76,7 @@ async def my_background_task():
     while not bot.is_closed:
         await asyncio.sleep(21600) # task runs every 6 hours
         global stored_info
-        pickle.dump( stored_info, open( "data/save.p", "wb" ) )
+        pickle.dump( stored_info, open( "/data/save.p", "wb" ) )
         counter += 1
         #await bot.send_message(channel, counter)
         print("Saving")
@@ -642,7 +642,7 @@ async def store(ctx):
         if debug == True:
             print(repr(stored_info))
         
-        pickle.dump( stored_info, open( "data/save.p", "wb" ) )
+        pickle.dump( stored_info, open( "/data/save.p", "wb" ) )
     else:
         await bot.say("You do not have the necessary permissions")
 
@@ -652,7 +652,7 @@ async def deleteinfo(ctx):
         global stored_info
         print("Deleting")
         stored_info = []
-        pickle.dump( stored_info, open( "data/save.p", "wb" ) )
+        pickle.dump( stored_info, open( "/data/save.p", "wb" ) )
     else:
         await bot.say("You do not have the necessary permissions")
 
@@ -662,10 +662,10 @@ async def exportfile(ctx):
         global stored_info
 
         print("Saving")
-        pickle.dump(stored_info, open("data/save.p", "wb"))
+        pickle.dump(stored_info, open("/data/save.p", "wb"))
         print("Exporting")
         #print(repr(stored_info))
-        await bot.send_file(ctx.message.author, "data/save.p")
+        await bot.send_file(ctx.message.author, "/data/save.p")
     else:
         await bot.say("You do not have the necessary permissions")
 
@@ -675,7 +675,7 @@ async def importfile(ctx):
         global stored_info
         print(repr(stored_info))
         print("Importing")
-        stored_info = pickle.load( open( "data/save.p", "rb" ) )
+        stored_info = pickle.load( open( "/data/save.p", "rb" ) )
         #print(repr(stored_info))
     else:
         await bot.say("You do not have the necessary permissions")
