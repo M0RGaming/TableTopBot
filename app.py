@@ -14,6 +14,10 @@ import time
 
 #print(os.environ["Token"])
 
+fil = open("/datas/testing.txt","w")
+fil.write("Test")
+fil.close()
+
 print(os.listdir("/datas"))
 
 time.sleep(3600)
