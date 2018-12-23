@@ -7,6 +7,7 @@ from xml.dom import minidom
 import pickle
 import sys
 from datetime import datetime
+from copy import deepcopy
 #import string
 #import unicodedata
 #from git import Repo
@@ -546,7 +547,7 @@ async def initchannel(ctx):
 		initl = []
 		idnumber = 0
 		pinmessage = 0
-		info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])])
+		info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])],[("ID",["NAME","MACRO"])])
 		stored_info.append(info)
 		try:
 			await bot.delete_message(ctx.message)
@@ -708,6 +709,13 @@ async def help(command="None"):
 	helptxt += "\n</removeinit (ri)> <Players can use this to remove their character from the bot database>"
 	helptxt += "\n</togglepin (tp)> <GM uses to toggle pinning init list (Default = Off)>"
 	helptxt += "```"
+	helptxt += "```md"+"\n[Command Group][Macro]\n"
+	helptxt += "\n</macrostore (ms)> <Anyone can use to save \"roll templates\" [syntax is /ms (name) (macro)]>"
+	helptxt += "\n</macrouse (mu)> <Anyone can use to activate a saved \"roll template\" [syntax is /mu (name) (macro)]>"
+	helptxt += "\n</macrolist (ml)> <Anyone can use to list all saved \"roll templates\" for the channel>"
+	helptxt += "\n</macroview (mv)> <Anyone can use to see a saved \"roll template\" without running it [syntax is /mv (name)]>"
+	helptxt += "\n</macrodelete (md)> <Anyone can use to delete a saved \"roll template\" [syntax is /md (name)]>"
+	helptxt += "```"
 	await bot.say(helptxt)
 
 @bot.command(name="togglepin",aliases=['tp'],pass_context=True)
@@ -780,26 +788,93 @@ async def test(ctx):
 	#   await bot.edit_message(messagec, messagec.content+" "+res.reaction.emoji)
 
 
-'''
-@bot.command(pass_context=True)
-async def i2(ctx):
-    global stored_info
-    sID = ctx.message.channel
-    auth = ctx.message.author.id
-    index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
-    if not index == "":
-        index = int(index)
-        print(index)
-        y = str([i2 for i2, v2 in enumerate(stored_info[index][2]) if v2[0] == auth])[1:-1]
-        if not y == "":
-            y = int(y)
-            print(stored_info[index][2][y][1][1])
-    else:
-        print("index does not exist")
 
-'''
-@bot.command(name="test3",pass_context=True,aliases=['t3'])
-async def test3(ctx, name, *output):
+@bot.command(name="macrouse",pass_context=True,aliases=['mu'])
+async def macrouse(ctx,name):
+	global stored_info
+	sID = ctx.message.channel
+	auth = ctx.message.author
+	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+	if not index == "":
+		index = int(index)
+		if debug:
+			print(index)
+		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		if not y == "":
+			y = int(y)
+			try:
+				outputl = deepcopy(stored_info[index][3][y][1][name])
+
+				leftBracket = "[~AgStBsafV=["
+				rightBracket = "]=GsafGjsA+]"
+
+				commands = "```css" + "\nCommands Used {from first to last} : ["
+				commandlen = len(commands)
+
+				ind = 0
+				for x in outputl:
+					try:
+						if rightBracket in x and leftBracket in x:
+							x = x.replace(leftBracket, "")
+							x = x.replace(rightBracket, "")
+							nx = str(internal_roll(x))
+							commands += x + ", "
+							outputl[ind] = "<" + nx + ">"
+						ind += 1
+					except:
+						print("Failed to do roll")
+
+				output = ''.join(outputl)
+
+				if debug:
+					print(output)
+
+				try:
+					await bot.delete_message(ctx.message)
+					await bot.say("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await bot.say(output)
+				except:
+					await bot.say("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await bot.say(output)
+
+				if debug:
+					print(commands)
+				if not commandlen == len(commands):
+					if debug:
+						print("commandlen: " + str(commandlen))
+						print("commandlength: " + str(len(commands)))
+					commands = commands[:-2]
+					commands += "]```"
+					# commands = commands.replace("[", "<")
+					# commands = commands.replace("]", ">")
+					await bot.say(commands)
+			except KeyError:
+				await bot.say("This macro does not exist")
+		else:
+			if debug:
+				print(stored_info[index][3])
+
+
+
+
+	else:
+		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+
+
+@bot.command(name="macrostore",pass_context=True,aliases=['ms'])
+async def macrostore(ctx, name):
+
+
+	sID = ctx.message.channel
+	message = ctx.message.content
+	output = message[message.index(name)+len(name):]
+	if debug:
+		print("~~~~~")
+		print(output)
+		#await bot.say(output)
+		print("~~~~~")
+
+	'''
 	argst = output
 	del output
 	if debug:
@@ -807,54 +882,181 @@ async def test3(ctx, name, *output):
 	#print(mod)
 	argsl = list(argst)
 	output = ' '.join(argsl)
+	'''
+	#print(output)
 
 	exit = False
 
-	cID = ctx.message.author
+	auth = ctx.message.author
 
 	'''
 	if "```" in output:
 		index = output.find("```")
 		await bot.say(index)
 		index += 3
-'''
+	'''
+
+	leftBracket = "[~AgStBsafV=["
+	rightBracket = "]=GsafGjsA+]"
+
 	output = output.replace("\\n", "\n")
-	output = output.replace("}", "]}")
-	output = output.replace("{", "{[")
-	output = output.replace("}", "{")
-	outputl = output.split('{')
-	print(outputl)
+	output = output.replace("</roll>", rightBracket+"</roll>")
+	output = output.replace("<roll>", "<roll>"+leftBracket)
+	output = output.replace("</roll>", "<roll>")
+	outputl = output.split('<roll>')
+	if debug:
+		print(outputl)
 
-	commands = "```md"+"\n<Commands Used (from first to last)>: "
-	commandlen = len(commands)
 
-	ind = 0
-	for x in outputl:
+
+
+	savel = deepcopy(outputl)
+
+
+
+	#info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])],[("ID",["NAME","MACRO"])])
+
+	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+	if not index == "":
+		index = int(index)
+
+		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		if y == "":
+			info = (auth, {name: savel})
+			stored_info[index][3].append(info)
+
+		else:
+			if debug:
+				print(stored_info[index][3])
+			stored_info[index][3][int(y)][1][name] = savel
+
 		try:
-			if "[" in x and "]" in x:
-				x = x.replace("[", "")
-				x = x.replace("]", "")
-				nx = str(internal_roll(x))
-				commands += x+", "
-				outputl[ind] = "["+nx+"]"
-			ind += 1
+			await bot.delete_message(ctx.message)
+			await bot.say("<@{}> created a new macro; \'{}\'".format(auth.id,name))
 		except:
-			print("Failed to do roll")
+			await bot.say("<@{}> created a new macro; \'{}\'".format(auth.id,name))
+
+	else:
+		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
-	output = ''.join(outputl)
+@bot.command(name="macrolist",pass_context=True,aliases=['ml'])
+async def macrolist(ctx):
 
-	await bot.say(output)
 
-	print(commands)
-	if not commandlen == len(commands):
-		print("commandlen: "+str(commandlen))
-		print("commandlength: "+str(len(commands)))
-		commands = commands[:-2]
-		commands += ">```"
-		commands = commands.replace("[", "<")
-		commands = commands.replace("]", ">")
-		await bot.say(commands)
+	sID = ctx.message.channel
+	message = ctx.message.content
+	auth = ctx.message.author
+
+
+
+	#info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])],[("ID",["NAME","MACRO"])])
+
+	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+	if not index == "":
+		index = int(index)
+
+		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		if y == "":
+			#info = (auth, {name: savel})
+			#stored_info[index][3].append(info)
+			await bot.send_message(auth, "Sorry, You have no macros on the channel: <#{}>".format(sID.id))
+
+		else:
+			if debug:
+				print(stored_info[index][3])
+			#stored_info[index][3][int(y)][1][name] = savel
+			final = "You have the following macros on the channel <#{}>:\n".format(sID.id)
+			for x in stored_info[index][3][int(y)][1]:
+				final += x
+				final += ", "
+			final = final[:-2]
+
+			await bot.send_message(auth, final)
+
+	else:
+		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+
+
+
+@bot.command(name="macrodelete",pass_context=True,aliases=['md'])
+async def macrodelete(ctx,name):
+	global stored_info
+	sID = ctx.message.channel
+	auth = ctx.message.author
+	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+	if not index == "":
+		index = int(index)
+		if debug:
+			print(index)
+		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		if not y == "":
+			y = int(y)
+
+			try:
+				stored_info[index][3][y][1].pop(name)
+				await bot.say("<@{}> deleted a macro: \'{}\'".format(auth.id,name))
+
+			except KeyError:
+				await bot.say("This macro does not exist")
+
+		else:
+			if debug:
+				print(stored_info[index][3])
+
+
+
+
+	else:
+		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+
+
+
+
+
+
+@bot.command(name="macroview",pass_context=True,aliases=['mv'])
+async def macroview(ctx,name):
+	global stored_info
+	sID = ctx.message.channel
+	auth = ctx.message.author
+	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
+	if not index == "":
+		index = int(index)
+		if debug:
+			print(index)
+		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		if not y == "":
+			y = int(y)
+			try:
+				outputl = deepcopy(stored_info[index][3][y][1][name])
+				output = ''.join(outputl)
+
+				leftBracket = "[~AgStBsafV=["
+				rightBracket = "]=GsafGjsA+]"
+				output = output.replace(rightBracket, "</roll>")
+				output = output.replace(leftBracket, "<roll>")
+
+				if debug:
+					print(output)
+				await bot.send_message(auth, "This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
+				await bot.send_message(auth, output)
+
+			except KeyError:
+				await bot.say("This macro does not exist")
+		else:
+			if debug:
+				print(stored_info[index][3])
+
+	else:
+		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+
+
+
+
+
+
+
 
 
 def internal_roll(*argst):
