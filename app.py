@@ -1086,7 +1086,7 @@ def saveData():
 		print(repr(stored_info))
 
 	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'TableTopBot'")
 	os.system("cd saves && git checkout storage")
 	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
 	os.system("cd saves && git add save.p && git commit -m 'Saving Info' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
@@ -1117,7 +1117,7 @@ def deleteData():
 		print(repr(stored_info))
 
 	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'TableTopBot'")
 	os.system("cd saves && git checkout storage")
 	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
 	os.system("cd saves && git add save.p && git commit -m 'Deleting Info' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
