@@ -657,7 +657,9 @@ async def deleteinfo(ctx):
 @bot.command(pass_context=True, hidden=True)
 async def exportfile(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		exportData(bot)
+		exportData()
+		await bot.send_file(ctx.message.author, "save.p")
+		os.system("rm save.p")
 	else:
 		await bot.say("You do not have the necessary permissions")
 
@@ -1120,7 +1122,7 @@ def deleteData():
 	os.system("rm -r saves")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-def exportData(person,bot):
+def exportData():
 	global stored_info
 	print(repr(stored_info))
 	print("Exporting Data")
@@ -1128,8 +1130,7 @@ def exportData(person,bot):
 
 	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
 	os.system("cd saves && git checkout storage")
-
-	await bot.send_file(ctx.message.author, "saves/save.p")
+	os.system("cp saves/save.p .")
 	os.system("rm -r saves")
 	if debug:
 		print(repr(stored_info))
