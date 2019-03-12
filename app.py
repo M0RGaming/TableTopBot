@@ -82,11 +82,8 @@ async def my_background_task():
 	#   channel = discord.Object(id='161614687321063434')
 	while not bot.is_closed:
 		await asyncio.sleep(21600) # task runs every 6 hours
-		global stored_info
-		pickle.dump( stored_info, open( filelocation, "wb" ) )
+		saveData()
 		counter += 1
-		#await bot.send_message(channel, counter)
-		print("Saving")
 
 
 
@@ -113,7 +110,10 @@ async def on_ready():
 	print('------')
 	if debug:
 		print(stored_info)
-	stored_info = pickle.load( open( filelocation, "rb" ) )
+
+	stored_info = []
+	loadData()
+
 	if debug:
 		print(stored_info)
 
@@ -643,51 +643,28 @@ async def removeinit(ctx):
 @bot.command(pass_context=True, hidden=True)
 async def store(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		print("Saving")
-		global stored_info
-		if debug:
-			print(repr(stored_info))
-
-		os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-		os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
-		os.system("cd saves && git checkout storage")
-		pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
-		os.system("cd saves && git add save.p && git commit -m 'saving' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
-		os.system("rm -r saves")
+		saveData()
 	else:
 		await bot.say("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def deleteinfo(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		global stored_info
-		print("Deleting")
-		stored_info = []
-		pickle.dump( stored_info, open( filelocation, "wb" ) )
+		deleteData()
 	else:
 		await bot.say("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def exportfile(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		global stored_info
-
-		print("Saving")
-		pickle.dump(stored_info, open(filelocation, "wb"))
-		print("Exporting")
-		#print(repr(stored_info))
-		await bot.send_file(ctx.message.author, filelocation)
+		exportData()
 	else:
 		await bot.say("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def importfile(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		global stored_info
-		print(repr(stored_info))
-		print("Importing")
-		stored_info = pickle.load( open( filelocation, "rb" ) )
-		#print(repr(stored_info))
+		loadData()
 	else:
 		await bot.say("You do not have the necessary permissions")
 
@@ -1096,6 +1073,67 @@ def internal_roll(*argst):
 		print(total)
 	return total
 
+
+def saveData():
+	print("Saving Data")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	global stored_info
+	if debug:
+		print(repr(stored_info))
+
+	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+	os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git checkout storage")
+	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
+	os.system("cd saves && git add save.p && git commit -m 'saving' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
+	os.system("rm -r saves")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+def loadData():
+	global stored_info
+	print(repr(stored_info))
+	print("Loading Data")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+	os.system("cd saves && git checkout storage")
+	stored_info = pickle.load( open( "saves/save.p", "rb" ) )
+	os.system("rm -r saves")
+	if debug:
+		print(repr(stored_info))
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+
+def deleteData():
+	global stored_info
+	print("Deleting Data")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	stored_info = []
+	if debug:
+		print(repr(stored_info))
+
+	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+	os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git checkout storage")
+	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
+	os.system("cd saves && git add save.p && git commit -m 'deleting' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
+	os.system("rm -r saves")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+def exportData(person):
+	global stored_info
+	print(repr(stored_info))
+	print("Exporting Data")
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+	os.system("cd saves && git checkout storage")
+
+	await bot.send_file(ctx.message.author, "saves/save.p")
+	os.system("rm -r saves")
+	if debug:
+		print(repr(stored_info))
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
 bot.loop.create_task(my_background_task())
