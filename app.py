@@ -657,7 +657,7 @@ async def deleteinfo(ctx):
 @bot.command(pass_context=True, hidden=True)
 async def exportfile(ctx):
 	if str(ctx.message.author.id) == "161614687321063434":
-		exportData()
+		exportData(bot)
 	else:
 		await bot.say("You do not have the necessary permissions")
 
@@ -1120,7 +1120,7 @@ def deleteData():
 	os.system("rm -r saves")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-def exportData(person):
+def exportData(person,bot):
 	global stored_info
 	print(repr(stored_info))
 	print("Exporting Data")
