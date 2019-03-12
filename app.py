@@ -1,4 +1,4 @@
-import discord
+Aimport discord
 import asyncio
 from discord.ext import commands
 import random
@@ -20,6 +20,9 @@ BOT_PREFIX = ("~","/")
 desc = "Your Typical DnD bot... except better."
 bot = commands.Bot(command_prefix=BOT_PREFIX, description=desc)
 
+
+gitUser = os.environ["GitUser"]
+gitPass = os.environ["GitPass"]
 
 
 token = os.environ["Token"]
@@ -650,7 +653,7 @@ async def store(ctx):
 		os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
 		os.system("cd saves && git checkout storage")
 		pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
-		os.system("cd saves && git add save.p && git commit -m 'saving' && git push")
+		os.system("cd saves && git add save.p && git commit -m 'saving' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
 		os.system("rm -r saves")
 	else:
 		await bot.say("You do not have the necessary permissions")
