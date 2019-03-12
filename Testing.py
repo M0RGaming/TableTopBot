@@ -14,10 +14,12 @@ import time
 
 #print(os.environ["Token"])
 
-fil = open("/datas/testing.txt","w")
-fil.write("Test")
-fil.close()
+#fil = open("/datas/testing.txt","w")
+#fil.write("Test")
+#fil.close()
 
-print(os.listdir("/datas"))
+#print(os.listdir("/datas"))
 
-time.sleep(3600)
+#time.sleep(3600)
+
+os.system("git init")
