@@ -22,4 +22,9 @@ import time
 
 #time.sleep(3600)
 
-os.system("git init")
+os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+os.system("cd saves && git checkout storage")
+
+if not open("save.p","rb") == open("saves/save.p","rb"):
+	print("NOT THE SAME")
+
