@@ -1124,6 +1124,7 @@ def deleteData():
 
 def exportData():
 	global stored_info
+	saveData()
 	print(repr(stored_info))
 	print("Exporting Data")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
