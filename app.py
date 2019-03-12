@@ -646,7 +646,11 @@ async def store(ctx):
 		if debug:
 			print(repr(stored_info))
 
-		pickle.dump( stored_info, open( filelocation, "wb" ) )
+		os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
+		os.system("cd saves && git checkout storage")
+		pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
+		os.system("cd saves && git add save.p && git commit -m 'saving' && git push")
+		os.system("rm -r saves")
 	else:
 		await bot.say("You do not have the necessary permissions")
 
