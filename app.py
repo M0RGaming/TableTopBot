@@ -647,7 +647,7 @@ async def store(ctx):
 			print(repr(stored_info))
 
 		os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-		os.system("cd saves && git config user.email 'ttb@m0rgaming.com' && git config user.name 'Table Top Bot'")
+		os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
 		os.system("cd saves && git checkout storage")
 		pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
 		os.system("cd saves && git add save.p && git commit -m 'saving' && git push")
