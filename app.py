@@ -117,12 +117,14 @@ async def on_ready():
 	if debug:
 		print(stored_info)
 
+	'''
 	old_f = sys.stdout
 	class F:
 		def write(self, x):
 			old_f.write(x.replace("\n", " [%s]\n" % str(datetime.now())))
 	#            old_f.write("["+str(datetime.now())+"] --- "+x)
 	sys.stdout = F()
+	'''
 #   await bot.change_presence('Type /help for help')
 #   await bot.change_presence(game=discord.Game(name='Type /help for help'))
 #   await bot.change_status(game=discord.Game(name = "Type /help for help"))
@@ -1084,10 +1086,10 @@ def saveData():
 		print(repr(stored_info))
 
 	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-	os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'Table Top Bot'")
 	os.system("cd saves && git checkout storage")
 	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
-	os.system("cd saves && git add save.p && git commit -m 'saving' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
+	os.system("cd saves && git add save.p && git commit -m 'Saving Info' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
 	os.system("rm -r saves")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
@@ -1115,10 +1117,10 @@ def deleteData():
 		print(repr(stored_info))
 
 	os.system("git clone https://github.com/M0RGaming/TableTopBot.git saves")
-	os.system("cd saves && git config user.email 'chinmaytlc@gmail.com' && git config user.name 'Table Top Bot'")
+	os.system("cd saves && git config user.email 'ttb@m0rgaming.ga' && git config user.name 'Table Top Bot'")
 	os.system("cd saves && git checkout storage")
 	pickle.dump( stored_info, open( "saves/save.p", "wb" ) )
-	os.system("cd saves && git add save.p && git commit -m 'deleting' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
+	os.system("cd saves && git add save.p && git commit -m 'Deleting Info' && git push https://{}:{}@github.com/M0RGaming/TableTopBot.git".format(gitUser,gitPass))
 	os.system("rm -r saves")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
