@@ -1,4 +1,4 @@
-Aimport discord
+import discord
 import asyncio
 from discord.ext import commands
 import random
@@ -134,7 +134,7 @@ async def wait_until_login():
 
 @bot.command(name="init",pass_context=True,aliases=['i'])
 async def init(ctx, name="xml", *mod):
-
+A
 	namel = name
 	del name
 	argst = mod
