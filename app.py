@@ -117,6 +117,8 @@ async def on_ready():
 	if debug:
 		print(stored_info)
 
+	await bot.change_presence(activity=discord.Game(name='Type /help for help'))
+
 	'''
 	old_f = sys.stdout
 	class F:
@@ -131,10 +133,11 @@ async def on_ready():
 
 @bot.event
 async def wait_until_login():
-	await bot.change_presence(game=discord.Game(name='Type /help for help'))
+	await bot.change_presence(activity=discord.Game(name='Type /help for help'))
 
 
-@bot.command(name="init",pass_context=True,aliases=['i'])
+#@bot.command(name="init",pass_context=True,aliases=['i'])
+@bot.command(name="init",aliases=['i'])
 async def init(ctx, name="xml", *mod):
 	namel = name
 	del name
@@ -150,8 +153,8 @@ async def init(ctx, name="xml", *mod):
 	name = ' '.join(argsl)
 
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -175,45 +178,49 @@ async def init(ctx, name="xml", *mod):
 					init = random.randint(1,20)+mod
 					initl.append((name,init,idnumber))
 					initl.sort(key=lambda tup: tup[1], reverse=True)
-					clientid = ctx.message.author.id
+					clientid = ctx.author.id
 					changedmsg = "```==========Init=========="
 					for x in range(0, len(initl)):
+						print(initl[x])
 						a,b,c = initl[x]
 						changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
 					changedmsg += "```"
-					messagei = await bot.edit_message(messagei, changedmsg)
+					#messagei = await messagei.edit(content=changedmsg)
+					await messagei.edit(content=changedmsg)
 				else:
-					await bot.say("You are not yet registered")
+					await ctx.send("You are not yet registered")
 			else:
 				idnumber = idnumber+1
 				init = random.randint(1,20)
 				init = init+mod
 				initl.append((name,init,idnumber))
 				initl.sort(key=lambda tup: tup[1], reverse=True)
-				clientid = ctx.message.author.id
+				clientid = ctx.author.id
 				changedmsg = "```==========Init=========="
 				for x in range(0, len(initl)):
+					print(initl[x])
 					a,b,c = initl[x]
 					changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
 				changedmsg += "```"
-				messagei = await bot.edit_message(messagei, changedmsg)
+				#messagei = await messagei.edit(content=changedmsg)
+				await messagei.edit(content=changedmsg)
 		else:
-			await bot.say("Init Rolling has not started yet")
+			await ctx.send("Init Rolling has not started yet")
 
 		stored_info[index][1][1] = rinit
 		stored_info[index][1][0] = messagei
 		stored_info[index][1][2] = initl
 		stored_info[index][1][3] = idnumber
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 @bot.command(name="deleteinit",pass_context=True,aliases=['di'])
 async def deleteinit(ctx, id):
 	global stored_info
 	#print(stored_info)
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -231,20 +238,21 @@ async def deleteinit(ctx, id):
 				a,b,c = initl[x]
 				changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
 			changedmsg += "```"
-			messagei = await bot.edit_message(messagei, changedmsg)
+			#messagei = await messagei.edit(changedmsg)
+			await messagei.edit(content=changedmsg)
 
 			stored_info[index][1][2] = initl
 			stored_info[index][1][0] = messagei
 
 		else:
-			await bot.say("Id not found")
+			await ctx.send("Id not found")
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
 #  except:
-#       await bot.say("Invalid use of this command, Correct Way to use is: ~di [id]")
+#       await ctx.send("Invalid use of this command, Correct Way to use is: ~di [id]")
 
 
 
@@ -252,8 +260,8 @@ async def deleteinit(ctx, id):
 async def startinit(ctx):
 	global stored_info
 	#print(stored_info)
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -263,12 +271,12 @@ async def startinit(ctx):
 			global messagei
 			global idnumber
 			global initl
-			messagei = await bot.send_message(ctx.message.channel, "```==========Init==========```")
+			messagei = await ctx.send("```==========Init==========```")
 			try:
 				if pinmessage == 1:
 					await bot.pin_message(messagei)
 			except:
-				await bot.send_message(ctx.message.author, "Cannot pin message, probably due to not having the manage message privlage in roles.")
+				await ctx.author.send("Cannot pin message, probably due to not having the manage message privlage in roles.")
 			rinit = 1
 			idnumber = 0
 			initl = []
@@ -279,14 +287,14 @@ async def startinit(ctx):
 			stored_info[index][1][3] = idnumber
 
 		else:
-			await bot.say("Init recording has already begun.")
+			await ctx.send("Init recording has already begun.")
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 @bot.command(name="endinit",aliases=['ei'],pass_context=True)
 async def endinit(ctx):
 	global stored_info
-	sID = ctx.message.channel
+	sID = ctx.channel
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -294,31 +302,31 @@ async def endinit(ctx):
 
 		if rinit == 1:
 			rinit = 0
-			await bot.say("Init recording has stoped")
+			await ctx.send("Init recording has stoped")
 		else:
-			await bot.say("Init recording is not started.")
+			await ctx.send("Init recording is not started.")
 
 		stored_info[index][1][1] = rinit
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
 @bot.command(name="showinit",aliases=['showi'],pass_context=True)
 async def showinit(ctx):
 	global stored_info
-	sID = ctx.message.channel
+	sID = ctx.channel
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
 		messagei = stored_info[index][1][0]
 		if not messagei == None:
-			await bot.say(messagei.content)
+			await ctx.send(messagei.content)
 		else:
-			await bot.say("Init rolling has not occured before, do /si or /startinit to start rolling")
+			await ctx.send("Init rolling has not occured before, do /si or /startinit to start rolling")
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
@@ -370,21 +378,21 @@ async def roll(ctx, *argst):
 		breakdown = breakdown[:-4]
 		if "," in breakdown or "+" in breakdown:
 			try:
-				await bot.delete_message(ctx.message)
-				await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+") [Command Inputed:"+ctx.message.content+"]")
+				await bot.delete_message(ctx)
+				await ctx.send("<@"+str(ctx.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+") [Command Inputed:"+ctx.message.content+"]")
 			except:
-				await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+")")
+				await ctx.send("<@"+str(ctx.author.id)+"> Rolled a **"+str(total)+"**. ("+breakdown+")")
 		else:
 			try:
-				await bot.delete_message(ctx.message)
-				await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**. [Command Inputed:"+ctx.message.content+"]")
+				await bot.delete_message(ctx)
+				await ctx.send("<@"+str(ctx.author.id)+"> Rolled a **"+str(total)+"**. [Command Inputed:"+ctx.message.content+"]")
 			except:
-				await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a **"+str(total)+"**.")
+				await ctx.send("<@"+str(ctx.author.id)+"> Rolled a **"+str(total)+"**.")
 		if debug:
 			print(breakdown)
-		#await bot.say(breakdown)
+		#await ctx.send(breakdown)
 	except:
-		await bot.say("<@"+str(ctx.message.author.id)+"> specified an invalid dice expression.")
+		await ctx.send("<@"+str(ctx.author.id)+"> specified an invalid dice expression.")
 
 
 
@@ -427,21 +435,21 @@ async def cast(ctx, spell, *slott):
 					damage = internal_roll(x.getElementsByTagName("roll")[0].childNodes[0].nodeValue)
 				except:
 					damage = "N/A"
-				clientid = ctx.message.author.id
+				clientid = ctx.author.id
 				if not damage == "N/A":
-					await bot.say("<@"+str(ctx.message.author.id)+"> Attacked with "+spell+":\n"+str(hit)+" vs AC\n"+str(damage)+" Damage")
+					await ctx.send("<@"+str(ctx.author.id)+"> Attacked with "+spell+":\n"+str(hit)+" vs AC\n"+str(damage)+" Damage")
 				else:
-					await bot.say("<@"+str(ctx.message.author.id)+"> Used "+spell+":\n"+str(hit)+" vs DC")
+					await ctx.send("<@"+str(ctx.author.id)+"> Used "+spell+":\n"+str(hit)+" vs DC")
 				break
 			else:
 				y += 1
 		if y == len(spellxml):
-			await bot.say("Spell not found in database")
+			await ctx.send("Spell not found in database")
 		if debug:
 			print(spell)
 			print(slot)
 	except:
-		await bot.say("<@"+str(ctx.message.author.id)+"> entered an invalid expression.\nThe correct way to use this command is: ~cast [spell name] [spell slot]")
+		await ctx.send("<@"+str(ctx.author.id)+"> entered an invalid expression.\nThe correct way to use this command is: ~cast [spell name] [spell slot]")
 
 
 @bot.command(name="info",pass_context=True,aliases=['db','spellinfo','sinfo'])
@@ -456,7 +464,7 @@ async def info(ctx, *name):
 
 	exit = False
 
-	cID = ctx.message.author
+	cID = ctx.author
 	a = 0
 	final = "```==========Info========="
 	first = 1
@@ -502,7 +510,7 @@ async def info(ctx, *name):
 					#type = x.getElementsByTagName("type")[0].childNodes[0].nodeValue
 					if debug:
 						print(name)
-					#                    await bot.say(name+" "+type)
+					#                    await ctx.send(name+" "+type)
 
 					final += "```"
 					if debug:
@@ -518,20 +526,20 @@ async def info(ctx, *name):
 							ind = final[:2000-3].rfind("\n")
 							if debug:
 								print(ind)
-							await bot.send_message(cID, final[:ind]+"```")
+							await cID.send(final[:ind]+"```")
 							final = "```"+final[ind:]
 
 						else:
-							await bot.send_message(cID, final)
+							await cID.send(final)
 					except:
-						#await bot.say("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
-						await bot.say("This message typicaly occurs when one has private messaging disabled.\nDue to the size of the info, we are required to pm you with it.\nTo use this command, allow bots to pm you.")
+						#await ctx.send("Were you trying to get the spell info of wish?\nFun fact: Wish is so powerfull it breaks this bot.\nDont use ~info wish, just use the wiki\n\nThis message is also pulled up when trying to get the info for any class\nSo please... just use the wiki for classes (and wish)\n\nSo this just in: this message appears when you try to access a file thats too big for discord.\nWhat can you do? Use the wiki.")
+						await ctx.send("This message typicaly occurs when one has private messaging disabled.\nDue to the size of the info, we are required to pm you with it.\nTo use this command, allow bots to pm you.")
 					exit = True
 					break
 				#else:
 		a += 1
 	if a == len(corexml.childNodes) and exit == False:
-		await bot.say("Thing not found in database")
+		await ctx.send("Thing not found in database")
 	if debug:
 		print(name)
 
@@ -539,14 +547,14 @@ async def info(ctx, *name):
 
 @bot.command(name="initchannel",pass_context=True,aliases=['ic'])
 async def initchannel(ctx):
-	sID = ctx.message.channel
+	sID = ctx.channel
 	global stored_info
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if index == "":
 		global messagei
 		if debug:
 			print("starting")
-		auth = ctx.message.author.id
+		auth = ctx.author.id
 		rinit = 0
 		initl = []
 		idnumber = 0
@@ -554,15 +562,15 @@ async def initchannel(ctx):
 		info = (sID,[messagei,rinit,initl,idnumber,pinmessage],[("ID",["NAME","MOD"])],[("ID",["NAME","MACRO"])])
 		stored_info.append(info)
 		try:
-			await bot.delete_message(ctx.message)
-			await bot.say("Channel initialized")
+			await bot.delete_message(ctx)
+			await ctx.send("Channel initialized")
 		except:
-			await bot.say("Channel initialized")
+			await ctx.send("Channel initialized")
 		if debug:
 			print(stored_info)
-		print("New Channel initialized - "+str(ctx.message.channel.name))
+		print("New Channel initialized - "+str(ctx.channel))
 	else:
-		await bot.say("Channel already initialized")
+		await ctx.send("Channel already initialized")
 
 @bot.command(name="addinit",pass_context=True,aliases=['ai'],description="Adds a player to the Inititive database",brief="Adds a player to the Inititive database")
 async def addinit(ctx, name, *mod):
@@ -584,8 +592,8 @@ async def addinit(ctx, name, *mod):
 	mod = int(mod)
 
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -597,15 +605,15 @@ async def addinit(ctx, name, *mod):
 			stored_info[index][2].append(info)
 			#print(stored_info[index][2])
 			try:
-				await bot.delete_message(ctx.message)
-				await bot.say("<@"+str(auth)+"> has registered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
+				await bot.delete_message(ctx)
+				await ctx.send("<@"+str(auth)+"> has registered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
 			except:
-				await bot.say("You have registered charecter: "+name+" with a mod of "+str(mod))
+				await ctx.send("You have registered charecter: "+name+" with a mod of "+str(mod))
 
 		else:
-			await bot.say("You already have a registered charecter")
+			await ctx.send("You already have a registered charecter")
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
@@ -613,8 +621,8 @@ async def addinit(ctx, name, *mod):
 async def removeinit(ctx):
 
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -628,53 +636,52 @@ async def removeinit(ctx):
 			del stored_info[index][2][y]
 			#print(stored_info[index][2])
 			try:
-				await bot.delete_message(ctx.message)
-				#            await bot.edit_message(ctx.message,"You have unregistered charecter: "+name+" with a mod of "+str(mod))
-				await bot.say("<@"+str(auth)+"> has unregistered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
+				await bot.delete_message(ctx)
+				#            await bot.edit_message(ctx,"You have unregistered charecter: "+name+" with a mod of "+str(mod))
+				await ctx.send("<@"+str(auth)+"> has unregistered charecter: "+name+" with a mod of "+str(mod)+" [Command Inputed:"+ctx.message.content+"]")
 			except:
-				await bot.say("You have unregistered charecter: "+name+" with a mod of "+str(mod))
+				await ctx.send("You have unregistered charecter: "+name+" with a mod of "+str(mod))
 
 		else:
-			await bot.say("You have no registered charecters for this channel")
+			await ctx.send("You have no registered charecters for this channel")
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
 
 @bot.command(pass_context=True, hidden=True)
 async def store(ctx):
-	if str(ctx.message.author.id) == "161614687321063434":
+	if str(ctx.author.id) == "161614687321063434":
 		saveData()
 	else:
-		await bot.say("You do not have the necessary permissions")
+		await ctx.send("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def deleteinfo(ctx):
-	if str(ctx.message.author.id) == "161614687321063434":
+	if str(ctx.author.id) == "161614687321063434":
 		deleteData()
 	else:
-		await bot.say("You do not have the necessary permissions")
+		await ctx.send("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def exportfile(ctx):
-	if str(ctx.message.author.id) == "161614687321063434":
+	if str(ctx.author.id) == "161614687321063434":
 		exportData()
-		await bot.send_file(ctx.message.author, "save.p")
+		await bot.send_file(ctx.author, "save.p")
 		os.system("rm save.p")
 	else:
-		await bot.say("You do not have the necessary permissions")
+		await ctx.send("You do not have the necessary permissions")
 
 @bot.command(pass_context=True, hidden=True)
 async def importfile(ctx):
-	if str(ctx.message.author.id) == "161614687321063434":
+	if str(ctx.author.id) == "161614687321063434":
 		loadData()
 	else:
-		await bot.say("You do not have the necessary permissions")
+		await ctx.send("You do not have the necessary permissions")
 
 @bot.command(name="help",aliases=['h'])
-async def help(command="None"):
-
+async def help(ctx,command="None"):
 	commandlist = []
 	commandlist.append(("roll","r","Anyone can use to roll standard dice expressions"))
 	commandlist.append(("cast","c","Anyone can use to cast a spell (rolls dice for Hit and Damage)"))
@@ -704,13 +711,13 @@ async def help(command="None"):
 	helptxt += "\n</macroview (mv)> <Anyone can use to see a saved \"roll template\" without running it [syntax is /mv (name)]>"
 	helptxt += "\n</macrodelete (md)> <Anyone can use to delete a saved \"roll template\" [syntax is /md (name)]>"
 	helptxt += "```"
-	await bot.say(helptxt)
+	await ctx.channel.send(helptxt)
 
 @bot.command(name="togglepin",aliases=['tp'],pass_context=True)
 async def togglepin(ctx):
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author.id
+	sID = ctx.channel
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -718,21 +725,21 @@ async def togglepin(ctx):
 		if pinmessage == 0:
 			pinmessage = 1
 			try:
-				await bot.delete_message(ctx.message)
-				await bot.say("Pins Turned On")
+				await bot.delete_message(ctx)
+				await ctx.send("Pins Turned On")
 			except:
-				await bot.say("Pins Turned On")
+				await ctx.send("Pins Turned On")
 		else:
 			pinmessage = 0
 			try:
-				await bot.delete_message(ctx.message)
-				await bot.say("Pins Turned Off")
+				await bot.delete_message(ctx)
+				await ctx.send("Pins Turned Off")
 			except:
-				await bot.say("Pins Turned Off")
+				await ctx.send("Pins Turned Off")
 
 		stored_info[index][1][4] = pinmessage
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 @bot.command(name="d20",pass_context=True)
@@ -740,48 +747,18 @@ async def d20(ctx, mod=0):
 	roll = random.randint(1,20)
 	try:
 		roll = mod+roll
-		await bot.say("<@"+str(ctx.message.author.id)+"> Rolled a "+str(roll))
+		await ctx.send("<@"+str(ctx.author.id)+"> Rolled a "+str(roll))
 	except:
-		await bot.say("Invalid d20 expression, do no have + inside the expression")
+		await ctx.send("Invalid d20 expression, do no have + inside the expression")
 
-
-
-@bot.command(name="test",pass_context=True)
-async def test(ctx):
-	messagec = await bot.say("Enter Char Name")
-	messagei = await bot.wait_for_message(author=ctx.message.author)
-	messagec = await bot.edit_message(messagec, messagei.content)
-	await bot.delete_message(messagei)
-	num = ["0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"]
-	messagec = await bot.edit_message(messagec, messagec.content+"\nPlease Enter Your init\nInit: ")
-	for x in num:
-		await bot.add_reaction(messagec,x)
-
-	await bot.add_reaction(messagec,u"\U0001F51A")
-	await bot.add_reaction(messagec,u"\u23EA")
-
-	end = False
-	while end == False:
-		res = await bot.wait_for_reaction(message=messagec,user=ctx.message.author)
-		emoji = res.reaction.emoji
-		if emoji == u"\U0001F51A":
-			await bot.say("Complete")
-			end = True
-		elif emoji == u"\u23EA":
-			messagec = await bot.edit_message(messagec, messagec.content[:-1])
-		else:
-			for x in range(0, len(num)):
-				if emoji == num[x]:
-					messagec = await bot.edit_message(messagec, messagec.content+str(x))
-	#   await bot.edit_message(messagec, messagec.content+" "+res.reaction.emoji)
 
 
 
 @bot.command(name="macrouse",pass_context=True,aliases=['mu'])
 async def macrouse(ctx,name):
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author
+	sID = ctx.channel
+	auth = ctx.author
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -818,12 +795,12 @@ async def macrouse(ctx,name):
 					print(output)
 
 				try:
-					await bot.delete_message(ctx.message)
-					await bot.say("<@{}> used a macro: \'{}\'".format(auth.id,name))
-					await bot.say(output)
+					await bot.delete_message(ctx)
+					await ctx.send("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await ctx.send(output)
 				except:
-					await bot.say("<@{}> used a macro: \'{}\'".format(auth.id,name))
-					await bot.say(output)
+					await ctx.send("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await ctx.send(output)
 
 				if debug:
 					print(commands)
@@ -835,9 +812,9 @@ async def macrouse(ctx,name):
 					commands += "]```"
 					# commands = commands.replace("[", "<")
 					# commands = commands.replace("]", ">")
-					await bot.say(commands)
+					await ctx.send(commands)
 			except KeyError:
-				await bot.say("This macro does not exist")
+				await ctx.send("This macro does not exist")
 		else:
 			if debug:
 				print(stored_info[index][3])
@@ -846,20 +823,21 @@ async def macrouse(ctx,name):
 
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 @bot.command(name="macrostore",pass_context=True,aliases=['ms'])
 async def macrostore(ctx, name):
 
 
-	sID = ctx.message.channel
+	sID = ctx.channel
+	print(ctx)
 	message = ctx.message.content
 	output = message[message.index(name)+len(name):]
 	if debug:
 		print("~~~~~")
 		print(output)
-		#await bot.say(output)
+		#await ctx.send(output)
 		print("~~~~~")
 
 	'''
@@ -875,12 +853,12 @@ async def macrostore(ctx, name):
 
 	exit = False
 
-	auth = ctx.message.author
+	auth = ctx.author
 
 	'''
 	if "```" in output:
 		index = output.find("```")
-		await bot.say(index)
+		await ctx.send(index)
 		index += 3
 	'''
 
@@ -919,22 +897,22 @@ async def macrostore(ctx, name):
 			stored_info[index][3][int(y)][1][name] = savel
 
 		try:
-			await bot.delete_message(ctx.message)
-			await bot.say("<@{}> created a new macro; \'{}\'".format(auth.id,name))
+			await bot.delete_message(ctx)
+			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth.id,name))
 		except:
-			await bot.say("<@{}> created a new macro; \'{}\'".format(auth.id,name))
+			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth.id,name))
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
-@bot.command(name="macrolist",pass_context=True,aliases=['ml'])
+@bot.command(name="macrolist",aliases=['ml'])
 async def macrolist(ctx):
 
 
-	sID = ctx.message.channel
+	sID = ctx.channel
 	message = ctx.message.content
-	auth = ctx.message.author
+	auth = ctx.author
 
 
 
@@ -948,7 +926,7 @@ async def macrolist(ctx):
 		if y == "":
 			#info = (auth, {name: savel})
 			#stored_info[index][3].append(info)
-			await bot.send_message(auth, "Sorry, You have no macros on the channel: <#{}>".format(sID.id))
+			await auth.send("Sorry, You have no macros on the channel: <#{}>".format(sID.id))
 
 		else:
 			if debug:
@@ -960,18 +938,18 @@ async def macrolist(ctx):
 				final += ", "
 			final = final[:-2]
 
-			await bot.send_message(auth, final)
+			await auth.send(final)
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
 @bot.command(name="macrodelete",pass_context=True,aliases=['md'])
 async def macrodelete(ctx,name):
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author
+	sID = ctx.channel
+	auth = ctx.author
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -983,10 +961,10 @@ async def macrodelete(ctx,name):
 
 			try:
 				stored_info[index][3][y][1].pop(name)
-				await bot.say("<@{}> deleted a macro: \'{}\'".format(auth.id,name))
+				await ctx.send("<@{}> deleted a macro: \'{}\'".format(auth.id,name))
 
 			except KeyError:
-				await bot.say("This macro does not exist")
+				await ctx.send("This macro does not exist")
 
 		else:
 			if debug:
@@ -996,7 +974,7 @@ async def macrodelete(ctx,name):
 
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
@@ -1006,8 +984,8 @@ async def macrodelete(ctx,name):
 @bot.command(name="macroview",pass_context=True,aliases=['mv'])
 async def macroview(ctx,name):
 	global stored_info
-	sID = ctx.message.channel
-	auth = ctx.message.author
+	sID = ctx.channel
+	auth = ctx.author
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -1027,17 +1005,17 @@ async def macroview(ctx,name):
 
 				if debug:
 					print(output)
-				await bot.send_message(auth, "This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
-				await bot.send_message(auth, output)
+				await auth.send("This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
+				await auth.send(output)
 
 			except KeyError:
-				await bot.say("This macro does not exist")
+				await ctx.send("This macro does not exist")
 		else:
 			if debug:
 				print(stored_info[index][3])
 
 	else:
-		await bot.say("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
+		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
 
 
 
@@ -1095,6 +1073,7 @@ def saveData():
 
 def loadData():
 	global stored_info
+	stored_info = []
 	print(repr(stored_info))
 	print("Loading Data")
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -1137,6 +1116,13 @@ def exportData():
 	os.system("rm -r saves")
 	if debug:
 		print(repr(stored_info))
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+@bot.command(name="displayData",aliases=['dd'])
+async def displayData(ctx):
+	global stored_info
+	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	await ctx.send(repr(stored_info))
 	print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
