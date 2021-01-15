@@ -21,8 +21,8 @@ desc = "Your Typical DnD bot... except better."
 bot = commands.Bot(command_prefix=BOT_PREFIX, description=desc)
 
 
-gitUser = os.environ["GitUser"]
-gitPass = os.environ["GitPass"]
+#gitUser = os.environ["GitUser"]
+#gitPass = os.environ["GitPass"]
 
 
 token = os.environ["Token"]
@@ -36,7 +36,7 @@ else:
 bot.remove_command('help')
 
 
-filelocation = os.environ["Location"]
+#filelocation = os.environ["Location"]
 
 
 xmlDoc = minidom.parse('db.xml')
@@ -153,7 +153,7 @@ async def init(ctx, name="xml", *mod):
 	name = ' '.join(argsl)
 
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -198,7 +198,6 @@ async def init(ctx, name="xml", *mod):
 				clientid = ctx.author.id
 				changedmsg = "```==========Init=========="
 				for x in range(0, len(initl)):
-					print(initl[x])
 					a,b,c = initl[x]
 					changedmsg += "\n<"+str(a)+"> Rolled an init of "+str(b)+". (id = "+str(c)+")"
 				changedmsg += "```"
@@ -219,7 +218,7 @@ async def init(ctx, name="xml", *mod):
 async def deleteinit(ctx, id):
 	global stored_info
 	#print(stored_info)
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -260,7 +259,7 @@ async def deleteinit(ctx, id):
 async def startinit(ctx):
 	global stored_info
 	#print(stored_info)
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -294,7 +293,7 @@ async def startinit(ctx):
 @bot.command(name="endinit",aliases=['ei'],pass_context=True)
 async def endinit(ctx):
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -315,7 +314,7 @@ async def endinit(ctx):
 @bot.command(name="showinit",aliases=['showi'],pass_context=True)
 async def showinit(ctx):
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -547,7 +546,7 @@ async def info(ctx, *name):
 
 @bot.command(name="initchannel",pass_context=True,aliases=['ic'])
 async def initchannel(ctx):
-	sID = ctx.channel
+	sID = ctx.channel.id
 	global stored_info
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if index == "":
@@ -592,7 +591,7 @@ async def addinit(ctx, name, *mod):
 	mod = int(mod)
 
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -621,7 +620,7 @@ async def addinit(ctx, name, *mod):
 async def removeinit(ctx):
 
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -716,7 +715,7 @@ async def help(ctx,command="None"):
 @bot.command(name="togglepin",aliases=['tp'],pass_context=True)
 async def togglepin(ctx):
 	global stored_info
-	sID = ctx.channel
+	sID = ctx.channel.id
 	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
@@ -757,8 +756,8 @@ async def d20(ctx, mod=0):
 @bot.command(name="macrouse",pass_context=True,aliases=['mu'])
 async def macrouse(ctx,name):
 	global stored_info
-	sID = ctx.channel
-	auth = ctx.author
+	sID = ctx.channel.id
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -796,10 +795,10 @@ async def macrouse(ctx,name):
 
 				try:
 					await bot.delete_message(ctx)
-					await ctx.send("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await ctx.send("<@{}> used a macro: \'{}\'".format(auth,name))
 					await ctx.send(output)
 				except:
-					await ctx.send("<@{}> used a macro: \'{}\'".format(auth.id,name))
+					await ctx.send("<@{}> used a macro: \'{}\'".format(auth,name))
 					await ctx.send(output)
 
 				if debug:
@@ -830,8 +829,7 @@ async def macrouse(ctx,name):
 async def macrostore(ctx, name):
 
 
-	sID = ctx.channel
-	print(ctx)
+	sID = ctx.channel.id
 	message = ctx.message.content
 	output = message[message.index(name)+len(name):]
 	if debug:
@@ -853,7 +851,7 @@ async def macrostore(ctx, name):
 
 	exit = False
 
-	auth = ctx.author
+	auth = ctx.author.id
 
 	'''
 	if "```" in output:
@@ -898,9 +896,9 @@ async def macrostore(ctx, name):
 
 		try:
 			await bot.delete_message(ctx)
-			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth.id,name))
+			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth,name))
 		except:
-			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth.id,name))
+			await ctx.send("<@{}> created a new macro; \'{}\'".format(auth,name))
 
 	else:
 		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
@@ -910,9 +908,9 @@ async def macrostore(ctx, name):
 async def macrolist(ctx):
 
 
-	sID = ctx.channel
+	sID = ctx.channel.id
 	message = ctx.message.content
-	auth = ctx.author
+	auth = ctx.author.id
 
 
 
@@ -923,10 +921,11 @@ async def macrolist(ctx):
 		index = int(index)
 
 		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
+		user = await bot.get_user_info(auth)
 		if y == "":
 			#info = (auth, {name: savel})
 			#stored_info[index][3].append(info)
-			await auth.send("Sorry, You have no macros on the channel: <#{}>".format(sID.id))
+			await user.send("Sorry, You have no macros on the channel: <#{}>".format(sID.id))
 
 		else:
 			if debug:
@@ -938,7 +937,7 @@ async def macrolist(ctx):
 				final += ", "
 			final = final[:-2]
 
-			await auth.send(final)
+			await user.send(final)
 
 	else:
 		await ctx.send("Channel not yet initialized, run /initchannel or /ic to initialize the channel")
@@ -948,8 +947,8 @@ async def macrolist(ctx):
 @bot.command(name="macrodelete",pass_context=True,aliases=['md'])
 async def macrodelete(ctx,name):
 	global stored_info
-	sID = ctx.channel
-	auth = ctx.author
+	sID = ctx.channel.id
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -961,7 +960,7 @@ async def macrodelete(ctx,name):
 
 			try:
 				stored_info[index][3][y][1].pop(name)
-				await ctx.send("<@{}> deleted a macro: \'{}\'".format(auth.id,name))
+				await ctx.send("<@{}> deleted a macro: \'{}\'".format(auth,name))
 
 			except KeyError:
 				await ctx.send("This macro does not exist")
@@ -984,8 +983,8 @@ async def macrodelete(ctx,name):
 @bot.command(name="macroview",pass_context=True,aliases=['mv'])
 async def macroview(ctx,name):
 	global stored_info
-	sID = ctx.channel
-	auth = ctx.author
+	sID = ctx.channel.id
+	auth = ctx.author.id
 	index = str([i for i, v in enumerate(stored_info) if v[0] == sID])[1:-1]
 	if not index == "":
 		index = int(index)
@@ -1005,8 +1004,9 @@ async def macroview(ctx,name):
 
 				if debug:
 					print(output)
-				await auth.send("This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
-				await auth.send(output)
+				user = await bot.get_user_info(auth)
+				await user.send("This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
+				await user.send(output)
 
 			except KeyError:
 				await ctx.send("This macro does not exist")
