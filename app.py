@@ -921,7 +921,7 @@ async def macrolist(ctx):
 		index = int(index)
 
 		y = str([i2 for i2, v2 in enumerate(stored_info[index][3]) if v2[0] == auth])[1:-1]
-		user = await bot.get_user_info(auth)
+		user = await bot.fetch_user(auth)
 		if y == "":
 			#info = (auth, {name: savel})
 			#stored_info[index][3].append(info)
@@ -1004,7 +1004,7 @@ async def macroview(ctx,name):
 
 				if debug:
 					print(output)
-				user = await bot.get_user_info(auth)
+				user = await bot.fetch_user(auth)
 				await user.send("This is the macro \'{}\' on the channel <#{}>".format(name,sID.id))
 				await user.send(output)
 
