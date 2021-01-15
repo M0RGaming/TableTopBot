@@ -21,8 +21,8 @@ desc = "Your Typical DnD bot... except better."
 bot = commands.Bot(command_prefix=BOT_PREFIX, description=desc)
 
 
-#gitUser = os.environ["GitUser"]
-#gitPass = os.environ["GitPass"]
+gitUser = os.environ["GitUser"]
+gitPass = os.environ["GitPass"]
 
 
 token = os.environ["Token"]
@@ -36,7 +36,7 @@ else:
 bot.remove_command('help')
 
 
-#filelocation = os.environ["Location"]
+filelocation = os.environ["Location"]
 
 
 xmlDoc = minidom.parse('db.xml')
